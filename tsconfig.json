@@ -6,5 +6,12 @@
 */
 {
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./projects/x-framework-identity-sdk/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/x-framework-identity-sdk/tsconfig.spec.json"
+    }
+]
 }
