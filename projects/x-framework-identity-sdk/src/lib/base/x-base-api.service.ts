@@ -44,7 +44,9 @@ export abstract class XBaseApiService extends XLoggable {
     //
     if (apiConfig) {
       //
-      this.version = apiConfig.apiVersion.replace('/', '');
+      this.version = isNullOrEmptyString(apiConfig.apiVersion)
+        ? null
+        : apiConfig.apiVersion.replace('/', '');
 
       //
       const bApiPath = apiConfig.baseApiPath || config.baseUrl;
@@ -62,7 +64,9 @@ export abstract class XBaseApiService extends XLoggable {
     }
 
     //
-    this.baseEndPointRoute = `${this.basePath}/${this.version}/${this.endPoint}`;
+    this.baseEndPointRoute = isNullOrEmptyString(this.version)
+      ? `${this.basePath}/${this.endPoint}`
+      : `${this.basePath}/${this.version}/${this.endPoint}`;
 
     //
     if (
