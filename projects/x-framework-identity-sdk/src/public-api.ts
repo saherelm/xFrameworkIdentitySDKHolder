@@ -51,6 +51,7 @@ export * from './lib/providers/x-url.encoder';
 //
 // Tools ...
 export * from './lib/tools/x-role.tools';
+export * from './lib/tools/x-endpoint.tools';
 
 //
 // Token ...

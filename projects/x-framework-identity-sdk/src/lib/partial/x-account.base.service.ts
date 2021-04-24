@@ -23,15 +23,19 @@ import {
   X_API_CONFIG,
   X_FRAMEWORK_IDENTITY_SDK_CONFIG,
 } from '../tokens/x-injectable-tokens';
+import {
+  XAccountEndPoint,
+  XAccountEndPointParam,
+} from './../typings/x-endpoint.typings';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { XManagerService } from 'x-framework-services';
 import { XUserProfileDto } from '../models/x-user.dto';
 import { XLoginResponseDto } from '../models/x-login.dto';
 import { XBaseApiService } from '../base/x-base-api.service';
-import { XAccountsStorageKeys } from '../constants/x-accounts.keys';
+import { XAccountStorageKeys } from '../constants/x-account.keys';
 import { XApiConfiguration } from '../config/x-api-service.config';
-import { validateUserAccountInfo } from '../helpers/x-accounts.helper';
+import { validateUserAccountInfo } from '../helpers/x-account.helper';
 import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.config';
 
 export abstract class XAccountBaseService extends XBaseApiService {
@@ -40,6 +44,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   state$ = new BehaviorSubject<XAccountState>(null);
 
   //
+  //#region Constructor ...
   constructor(
     protected router: Router,
     protected httpClient: HttpClient,
@@ -57,23 +62,546 @@ export abstract class XAccountBaseService extends XBaseApiService {
       this.state$.next(state);
     });
   }
+  //#endregion
 
   //
   //#region Service Actions ...
   /**
-   * Hi
    *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
+   * @returns string message ...
    */
-  public accountsHi(): Observable<string> {
+  public hi(): Observable<string> {
     //
     // Instantiiate Headers from Default Headers ...
     let headers = this.defaultHeaders;
     headers = this.addAcceptJson(headers);
 
     //
-    const endPointPath = `${this.baseEndPointRoute}/Hi`;
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Hi);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   *
+   * @returns string message ...
+   */
+  public passRequireXPowered(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.PassRequireXPowered);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * API Read Scope
+   * @returns string message ...
+   */
+  public passReadAccess(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.PassReadAccess);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * API Write Scope
+   * @returns string message ...
+   */
+  public passWriteAccess(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.PassWriteAccess);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * API Admin Scope
+   * @returns string message ...
+   */
+  public passAdminAccess(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.PassAdminAccess);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * API Manage Scop
+   * @returns string message ...
+   */
+  public passManageAccess(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.PassManageAccess);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Action which returns a List of Authenticated User Claims
+   * @returns string message which represent current user's claims ...
+   */
+  public hiClaims(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiClaims);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiUser(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiUser);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiEnabledUser(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiEnabledUser);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiElite(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiElite);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiEnabledElite(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiEnabledElite);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiReporter(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiReporter);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiEnabledReporter(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiEnabledReporter);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiActuary(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiActuary);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiEnabledActuary(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiEnabledActuary);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiChiefActuary(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiChiefActuary);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiEnabledChiefActuary(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiEnabledChiefActuary);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiAdmin(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiAdmin);
+
+    //
+    // return result ...
+    return this.httpClient
+      .get<string>(endPointPath, {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe: 'body',
+        reportProgress: false,
+      })
+      .pipe(map((res) => fromJson<string>(res)));
+  }
+
+  /**
+   * a simple Hello User for Checking Authentication and Policy
+   * @returns string message which contains authenticated user name ...
+   */
+  public hiEnabledAdmin(): Observable<string> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addAuthentication(headers);
+
+    //
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.HiEnabledAdmin);
 
     //
     // return result ...
@@ -516,7 +1044,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   async getDefaultUserIdentifier(): Promise<string> {
     //
     const result = this.managerService.secureStorageService.readOfType<string>(
-      XAccountsStorageKeys.DefaultUser,
+      XAccountStorageKeys.DefaultUser,
       false
     );
 
@@ -577,7 +1105,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
 
     //
     this.managerService.secureStorageService.write(
-      XAccountsStorageKeys.DefaultUser,
+      XAccountStorageKeys.DefaultUser,
       userSelectBy,
       true
     );
@@ -598,7 +1126,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
 
     //
     this.managerService.secureStorageService.remove(
-      XAccountsStorageKeys.DefaultUser,
+      XAccountStorageKeys.DefaultUser,
       false
     );
 
@@ -645,7 +1173,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
     //
     const result =
       this.managerService.secureStorageService.readOfType<XUserAccountInfoIndex>(
-        XAccountsStorageKeys.UserInfos,
+        XAccountStorageKeys.UserInfos,
         false
       ) || {};
 
@@ -667,7 +1195,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
 
     //
     this.managerService.secureStorageService.write(
-      XAccountsStorageKeys.UserInfos,
+      XAccountStorageKeys.UserInfos,
       model,
       true
     );
@@ -691,7 +1219,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   async removeAccounts(forceReNewState?: boolean): Promise<void> {
     //
     this.managerService.secureStorageService.remove(
-      XAccountsStorageKeys.UserInfos,
+      XAccountStorageKeys.UserInfos,
       false
     );
 
@@ -706,7 +1234,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    */
   async resetAccounts(): Promise<void> {
     //
-    const storageKeys = getKeys(XAccountsStorageKeys);
+    const storageKeys = getKeys(XAccountStorageKeys);
 
     //
     storageKeys.forEach((k) => {

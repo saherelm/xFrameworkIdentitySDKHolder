@@ -8,6 +8,9 @@ import {
   throwException,
   isNullOrUndefined,
   isNullOrEmptyString,
+  XOneOrManyType,
+  XKeyValue,
+  hasChild,
 } from 'x-framework-core';
 import { Inject } from '@angular/core';
 import {
@@ -22,6 +25,7 @@ import { XApiConfiguration } from '../config/x-api-service.config';
 import { getAuthorizationHeaderValue } from '../constants/x-header.enum';
 import { HttpHeaders, HttpClient, HttpParams } from '@angular/common/http';
 import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.config';
+import { setParams } from '../tools/x-endpoint.tools';
 
 export abstract class XBaseApiService extends XLoggable {
   //
@@ -380,6 +384,31 @@ export abstract class XBaseApiService extends XLoggable {
     }
 
     //
+    return result;
+  }
+
+  /**
+   * retrieve specific Action Route
+   * @param action the specified Action endpoint
+   * @returns complete action route contains route params
+   */
+  public getActionRoute<T, TParams>(
+    action: T,
+    params?: XOneOrManyType<XKeyValue<TParams, string>>
+  ) {
+    //
+    if (isNullOrEmptyString(String(action))) {
+      return this.baseEndPointRoute;
+    }
+
+    //
+    let result = `${this.baseEndPointRoute}/${String(action)}`;
+    if (!hasChild(params)) {
+      return result;
+    }
+
+    //
+    result = setParams(result, params);
     return result;
   }
   //#endregion
