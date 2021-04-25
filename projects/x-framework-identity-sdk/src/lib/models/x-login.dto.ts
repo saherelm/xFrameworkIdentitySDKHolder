@@ -6,13 +6,16 @@ import { XBaseResponseDto, XBaseRequestDto } from '../base/x-base.dto';
 export interface XLoginRequestDto extends XBaseRequestDto {
   userSelectBy: string;
   password: string;
-  device: XDeviceInfo;
-  language: XLocale;
+  device?: XDeviceInfo;
+  language?: XLocale;
 }
 
-export interface XLoginResponseDto extends XBaseResponseDto {
+export interface XTokenResponse extends XBaseResponseDto {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
+}
+
+export interface XLoginResponseDto extends XTokenResponse {
   profile: XUserProfileDto;
 }

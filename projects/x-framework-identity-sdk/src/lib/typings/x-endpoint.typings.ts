@@ -1,5 +1,3 @@
-import { toObject } from 'x-framework-core';
-
 export enum XEndPoint {
   Account,
 }
@@ -54,6 +52,7 @@ export enum XAccountEndPoint {
   //
   //#region Authentication ...
   DiscoveryDocument = 'DiscoveryDocument',
+  RequestScopeAccessToken = 'RequestScopeAccessToken',
   Login = 'Login',
   Authenticate = 'Authenticate',
   RefreshTokens = 'RefreshTokens',

@@ -34,6 +34,12 @@ export * from './lib/services/auth.service';
 export * from './lib/services/api-http-interceptor.service';
 
 //
+// Constants ...
+export * from './lib/constants/x-account.keys';
+export * from './lib/constants/x-header.enum';
+export * from './lib/constants/x-api-scope.enum';
+
+//
 // Validators ...
 export * from './lib/validators/api-validators';
 
