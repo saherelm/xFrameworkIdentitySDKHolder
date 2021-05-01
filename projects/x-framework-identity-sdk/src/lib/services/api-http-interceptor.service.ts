@@ -56,11 +56,12 @@ export class ApiHttpInterceptorService
     // Adding Identifier ...
     req = this.applyHeadersToRequest(req);
 
-    //
-    // Apply RefreshToken Handler ...
-    const handledRefreshToken = !this.isRefreshing
-      ? this.applyRefreshTokenHandler(next.handle(req), req, next)
-      : next.handle(req);
+    // //
+    // // Apply RefreshToken Handler ...
+    // const handledRefreshToken = !this.isRefreshing
+    //   ? this.applyRefreshTokenHandler(next.handle(req), req, next)
+    //   : next.handle(req);
+    const handledRefreshToken = next.handle(req);
 
     //
     // Apply Response Headers Handler ...
@@ -183,7 +184,7 @@ export class ApiHttpInterceptorService
       //
       return this.authService.state$.pipe(
         concatMap((accountState) => {
-          return this.authService.refreshToken(accountState).pipe(
+          return this.authService.refreshTokens().pipe(
             map((loginResponse) => {
               return {
                 accountState,

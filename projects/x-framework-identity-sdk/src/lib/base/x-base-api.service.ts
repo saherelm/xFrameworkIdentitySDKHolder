@@ -18,7 +18,7 @@ import {
   X_FRAMEWORK_IDENTITY_SDK_CONFIG,
 } from '../tokens/x-injectable-tokens';
 import { XQueryDto } from '../models/x-query.dto';
-import { XLoginResponseDto } from '../models/x-login.dto';
+import { XLoginResponseDto, XTokenResponseDto } from '../models/x-login.dto';
 import { XEndPoints } from '../typings/x-endpoint.typings';
 import { XHttpUrlEncodingCodec } from '../providers/x-url.encoder';
 import { XApiConfiguration } from '../config/x-api-service.config';
@@ -111,7 +111,11 @@ export abstract class XBaseApiService extends XLoggable {
   /**
    * adding Authentication & Authorization headers
    */
-  public addAuthentication(
+   public addAuthentication(
+    headers: HttpHeaders,
+    tokens?: XTokenResponseDto
+  ): HttpHeaders;
+   public addAuthentication(
     headers: HttpHeaders,
     tokens?: XLoginResponseDto
   ): HttpHeaders {

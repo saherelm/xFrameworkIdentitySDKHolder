@@ -1,12 +1,8 @@
 import {
-  notValue,
-  fromJson,
-  XValidators,
-  XExceptionIDs,
-  throwException,
-  isNullOrUndefined,
-  isNullOrEmptyString,
-} from 'x-framework-core';
+  XTokenResponseDto,
+  XLoginRequestDto,
+  XLoginResponseDto,
+} from '../models/x-login.dto';
 import {
   X_API_CONFIG,
   X_FRAMEWORK_IDENTITY_SDK_CONFIG,
@@ -17,12 +13,13 @@ import { Injectable, Inject } from '@angular/core';
 import { XManagerService } from 'x-framework-services';
 import { XAccountService } from '../x-account.service';
 import { XDiscoveryDto } from '../models/x-discovery.dto';
+import { XApiScope } from '../constants/x-api-scope.enum';
 import { XUserAccountInfo } from '../typings/x-account.typings';
 import { XApiConfiguration } from '../config/x-api-service.config';
 import { map, concatMap, filter, catchError } from 'rxjs/operators';
 import { XAccountBaseService } from '../partial/x-account.base.service';
+import { notValue, fromJson, isNullOrUndefined } from 'x-framework-core';
 import { HttpClient, HttpResponse, HttpEvent } from '@angular/common/http';
-import { XLoginResponseDto, XLoginRequestDto } from '../models/x-login.dto';
 import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.config';
 
 @Injectable({
@@ -77,8 +74,6 @@ export class AuthService extends XAccountBaseService {
 
   //
   //#region Service Actions ...
-  //
-  //#region RequestDiscoveryDocument ...
   /**
    * Retrieve Discovery Document
    *
@@ -101,235 +96,135 @@ export class AuthService extends XAccountBaseService {
     observe: any = 'body',
     reportProgress: boolean = false
   ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-
-    //
-    // to determine the Content-Type header
-    const consumes: string[] = [];
-    const endPointPath = `${this.baseEndPointRoute}`;
-
-    //
-    // return result ...
-    return this.httpClient.get<XDiscoveryDto>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
+    return this.accountService.requestDiscoveryDocument(
       observe,
-      reportProgress,
-    });
+      reportProgress
+    );
   }
-  //#endregion
 
-  //
-  //#region RequestReadToken ...
   /**
-   * Request Read Access Token for API Actions
+   * Request Specific Scope Access Token for API Actions
    *
+   * @param scope the specific api scope
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public requestReadToken(
+  public requestScopeAccessToken(
+    scope: XApiScope,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<string>;
-  public requestReadToken(
+  ): Observable<XTokenResponseDto>;
+  public requestScopeAccessToken(
+    scope: XApiScope,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<string>>;
-  public requestReadToken(
+  ): Observable<HttpResponse<XTokenResponseDto>>;
+  public requestScopeAccessToken(
+    scope: XApiScope,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<string>>;
-  public requestReadToken(
+  ): Observable<HttpEvent<XTokenResponseDto>>;
+  public requestScopeAccessToken(
+    scope: XApiScope,
     observe: any = 'body',
     reportProgress: boolean = false
   ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-
-    //
-    // to determine the Content-Type header
-    const consumes: string[] = [];
-    const endPointPath = `${this.baseEndPointRoute}/RequestReadToken`;
-
-    //
-    // return result ...
-    return this.httpClient.get<XDiscoveryDto>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
+    return this.accountService.requestScopeAccessToken(
+      scope,
       observe,
-      reportProgress,
-    });
+      reportProgress
+    );
   }
-  //#endregion
 
-  //
-  //#region RequestWriteToken ...
   /**
-   * Request Write Access Token for API Actions
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public requestWriteToken(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<string>;
-  public requestWriteToken(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<string>>;
-  public requestWriteToken(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<string>>;
-  public requestWriteToken(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-
-    //
-    // to determine the Content-Type header
-    const consumes: string[] = [];
-    const endPointPath = `${this.baseEndPointRoute}/RequestWriteToken`;
-
-    //
-    // return result ...
-    return this.httpClient.get<XDiscoveryDto>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-  //#endregion
-
-  //
-  //#region ReNewToken ...
-  /**
-   * ReNew Expired Token
+   * Authenticate a User
    *
    * @param body an instance of XLoginRequest class which holds UserName and Password
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public reNewToken(
-    body: XLoginResponseDto,
+  public authenticate(
+    body: XLoginRequestDto,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<XLoginResponseDto>;
-  public reNewToken(
-    body: XLoginResponseDto,
+  ): Observable<XTokenResponseDto>;
+  public authenticate(
+    body: XLoginRequestDto,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<XLoginResponseDto>>;
-  public reNewToken(
-    body: XLoginResponseDto,
+  ): Observable<HttpResponse<XTokenResponseDto>>;
+  public authenticate(
+    body: XLoginRequestDto,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<XLoginResponseDto>>;
-  public reNewToken(
-    body: XLoginResponseDto,
+  ): Observable<HttpEvent<XTokenResponseDto>>;
+  public authenticate(
+    body: XLoginRequestDto,
     observe: any = 'body',
     reportProgress: boolean = false
   ): Observable<any> {
-    //
-    if (
-      isNullOrUndefined(body) ||
-      isNullOrEmptyString(body.accessToken) ||
-      isNullOrEmptyString(body.refreshToken)
-    ) {
-      throwException(XExceptionIDs.InvalidArgs);
-    }
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/ReNewToken`;
-
-    //
-    // return result ...
-    return this.httpClient.post<XLoginResponseDto>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
+    return this.accountService.authenticate(body, observe, reportProgress);
   }
-  //#endregion
 
-  //
-  //#region RefreshToken ...
   /**
-   * ReNew Expired Token
+   * Login a User
    *
    * @param body an instance of XLoginRequest class which holds UserName and Password
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public refreshToken(
-    body: XLoginResponseDto,
+  public login(
+    body: XLoginRequestDto,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XLoginResponseDto>;
-  public refreshToken(
-    body: XLoginResponseDto,
+  public login(
+    body: XLoginRequestDto,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XLoginResponseDto>>;
-  public refreshToken(
-    body: XLoginResponseDto,
+  public login(
+    body: XLoginRequestDto,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XLoginResponseDto>>;
-  public refreshToken(
-    body: XLoginResponseDto,
+  public login(
+    body: XLoginRequestDto,
     observe: any = 'body',
     reportProgress: boolean = false
   ): Observable<any> {
     //
-    if (
-      isNullOrUndefined(body) ||
-      isNullOrEmptyString(body.accessToken) ||
-      isNullOrEmptyString(body.refreshToken)
-    ) {
-      throwException(XExceptionIDs.InvalidArgs);
-    }
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/RefreshToken`;
-
-    //
-    // return result ...
-    return this.httpClient.post<XLoginResponseDto>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
+    return this.applyLoginResponseActions(
+      body.userSelectBy,
+      this.accountService.login(body, observe, reportProgress)
+    );
   }
-  //#endregion
 
-  //
-  //#region ValidateRevision ...
+  /**
+   * Refresh Expired Tokens
+   *
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public refreshTokens(
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XTokenResponseDto>;
+  public refreshTokens(
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XTokenResponseDto>>;
+  public refreshTokens(
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XTokenResponseDto>>;
+  public refreshTokens(
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    return this.accountService.refreshTokens(observe, reportProgress);
+  }
+
   /**
    * Validate Revision Checksum
    *
@@ -357,131 +252,19 @@ export class AuthService extends XAccountBaseService {
     observe: any = 'body',
     reportProgress: boolean = false
   ): Observable<any> {
-    //
-    if (isNullOrEmptyString(revision)) {
-      throwException(XExceptionIDs.InvalidArgs);
-    }
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/Validate`;
-
-    //
-    // return result ...
-    return this.httpClient.post<boolean>(
-      endPointPath,
-      { revision },
-      {
-        withCredentials: this.apiConfig.withCredentials,
-        headers,
-        observe,
-        reportProgress,
-      }
+    return this.accountService.validateRevision(
+      revision,
+      observe,
+      reportProgress
     );
   }
-  //#endregion
 
-  //
-  //#region Authenticate ...
-  /**
-   * Authenticate a User
-   *
-   * @param body an instance of XLoginRequest class which holds UserName and Password
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public authenticate(
-    body: XLoginRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XLoginResponseDto>;
-  public authenticate(
-    body: XLoginRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XLoginResponseDto>>;
-  public authenticate(
-    body: XLoginRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XLoginResponseDto>>;
-  public authenticate(
-    body: XLoginRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    if (
-      isNullOrUndefined(body) ||
-      isNullOrEmptyString(body.password) ||
-      isNullOrEmptyString(body.userSelectBy)
-    ) {
-      throwException(XExceptionIDs.InvalidArgs);
-    }
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/Authenticate`;
-
-    //
-    // return result ...
-    return this.applyLoginResponseActions(
-      body.userSelectBy,
-      this.httpClient.post<XLoginResponseDto>(endPointPath, body, {
-        withCredentials: this.apiConfig.withCredentials,
-        headers,
-        observe,
-        reportProgress,
-      })
-    );
-  }
-  //#endregion
-
-  //
-  //#region Logout ...
   /**
    * Logout User ...
    */
-  public logout(returnUrl?: string): Promise<void> {
-    return new Promise<void>(async (res) => {
-      //
-      const isLoggedIn = await this.isLoggedIn();
-      if (!isLoggedIn) {
-        throwException(XExceptionIDs.NotAllowed);
-      }
-
-      //
-      const defUserId = await this.getDefaultUserIdentifier();
-      XValidators.validateNotEmpty(defUserId);
-
-      //
-      const defUser = await this.getDefaultUser();
-      XValidators.validateNotNull(defUser);
-
-      //
-      await this.removeDefaultUser(true);
-
-      //
-      if (!isNullOrEmptyString(returnUrl)) {
-        this.router.navigateByUrl(returnUrl);
-      }
-
-      //
-      res();
-    });
+  public async logout(returnUrl?: string) {
+    return this.accountService.logout(returnUrl);
   }
-  //#endregion
   //#endregion
 
   //
@@ -505,7 +288,7 @@ export class AuthService extends XAccountBaseService {
 
   private applyLoginResponseActions(
     userSelectBy: string,
-    observable: Observable<HttpEvent<XLoginResponseDto>>
+    observable: Observable<XLoginResponseDto>
   ): Observable<XUserAccountInfo> {
     //
     return observable.pipe(
@@ -523,20 +306,22 @@ export class AuthService extends XAccountBaseService {
 
         //
         return this.applyUpdateUserAccountInfo(mUserInfo);
-      }),
-      concatMap((userInfo) => {
-        //
-        return this.accountService.accountsFriendshipInfo(userSelectBy).pipe(
-          concatMap((friendshipInfo) => {
-            //
-            // Add Friendship ...
-            userInfo.profile.friendshipInfo = friendshipInfo;
+      })
+      // ,
+      // concatMap((userInfo) => {
+      //   //
+      //   return this.accountService.accountsFriendshipInfo(userSelectBy).pipe(
+      //     concatMap((friendshipInfo) => {
+      //       //
+      //       // Add Friendship ...
+      //       userInfo.profile.friendshipInfo = friendshipInfo;
 
-            //
-            return this.applyUpdateUserAccountInfo(userInfo);
-          })
-        );
-      }),
+      //       //
+      //       return this.applyUpdateUserAccountInfo(userInfo);
+      //     })
+      //   );
+      // })
+      ,
       catchError((error: any) => {
         return throwError(error);
       })

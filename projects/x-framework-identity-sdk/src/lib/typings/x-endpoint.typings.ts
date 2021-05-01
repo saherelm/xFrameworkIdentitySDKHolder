@@ -56,6 +56,7 @@ export enum XAccountEndPoint {
   Login = 'Login',
   Authenticate = 'Authenticate',
   RefreshTokens = 'RefreshTokens',
+  Validate = 'Validate',
   //#endregion
 
   //

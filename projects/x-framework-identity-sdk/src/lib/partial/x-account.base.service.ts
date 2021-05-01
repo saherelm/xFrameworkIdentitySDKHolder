@@ -31,11 +31,11 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { XManagerService } from 'x-framework-services';
 import { XUserProfileDto } from '../models/x-user.dto';
-import { XLoginResponseDto } from '../models/x-login.dto';
 import { XBaseApiService } from '../base/x-base-api.service';
 import { XAccountStorageKeys } from '../constants/x-account.keys';
 import { XApiConfiguration } from '../config/x-api-service.config';
 import { validateUserAccountInfo } from '../helpers/x-account.helper';
+import { XLoginResponseDto, XTokenResponseDto } from '../models/x-login.dto';
 import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.config';
 
 export abstract class XAccountBaseService extends XBaseApiService {
@@ -708,8 +708,17 @@ export abstract class XAccountBaseService extends XBaseApiService {
     }
 
     //
-    const expiredAt = defaultUser.expiresAt;
+    let expiredAt = defaultUser.expiresAt;
     const currentDate = new Date().getTime();
+
+    //
+    // Fix different length ...
+    const expiredAtStr = expiredAt.toString();
+    const currentDateStr = currentDate.toString();
+    const lengthDiff = currentDateStr.length - expiredAtStr.length;
+    if (lengthDiff > 0) {
+      expiredAt = expiredAt * Math.pow(10, lengthDiff);
+    }
 
     //
     return currentDate >= expiredAt;
@@ -940,6 +949,10 @@ export abstract class XAccountBaseService extends XBaseApiService {
    * @param oldInfo user's old token's info ...
    * @param newInfo new user's token info which returned after token refreshing ...
    */
+  async updateUserTokens(
+    oldInfo: XLoginResponseDto,
+    newInfo: XTokenResponseDto
+  ): Promise<void>;
   async updateUserTokens(
     oldInfo: XLoginResponseDto,
     newInfo: XLoginResponseDto

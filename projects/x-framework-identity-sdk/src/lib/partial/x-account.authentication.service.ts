@@ -4,14 +4,14 @@ import {
   XValidators,
   XExceptionIDs,
   throwException,
-  isNullOrUndefined,
   isNullOrEmptyString,
 } from 'x-framework-core';
 import {
-  XTokenResponse,
+  XTokenResponseDto,
   XLoginRequestDto,
   XLoginResponseDto,
 } from '../models/x-login.dto';
+import { Observable, of } from 'rxjs';
 import {
   XAccountEndPoint,
   XAccountEndPointParam,
@@ -20,7 +20,6 @@ import {
   XActionRequestDto,
   XActionResponseDto,
 } from './../models/x-registration-dto';
-import { Observable, from, of } from 'rxjs';
 import { map, concatMap } from 'rxjs/operators';
 import { XDiscoveryDto } from '../models/x-discovery.dto';
 import { XApiScope } from '../constants/x-api-scope.enum';
@@ -84,17 +83,17 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
     scope: XApiScope,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<XTokenResponse>;
+  ): Observable<XTokenResponseDto>;
   public requestScopeAccessToken(
     scope: XApiScope,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<XTokenResponse>>;
+  ): Observable<HttpResponse<XTokenResponseDto>>;
   public requestScopeAccessToken(
     scope: XApiScope,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<XTokenResponse>>;
+  ): Observable<HttpEvent<XTokenResponseDto>>;
   public requestScopeAccessToken(
     scope: XApiScope,
     observe: any = 'body',
@@ -115,7 +114,7 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
 
     //
     // return result ...
-    return this.httpClient.post<XTokenResponse>(endPointPath, {
+    return this.httpClient.post<XTokenResponseDto>(endPointPath, {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
@@ -134,17 +133,17 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
     body: XLoginRequestDto,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<XTokenResponse>;
+  ): Observable<XTokenResponseDto>;
   public authenticate(
     body: XLoginRequestDto,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<XTokenResponse>>;
+  ): Observable<HttpResponse<XTokenResponseDto>>;
   public authenticate(
     body: XLoginRequestDto,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<XTokenResponse>>;
+  ): Observable<HttpEvent<XTokenResponseDto>>;
   public authenticate(
     body: XLoginRequestDto,
     observe: any = 'body',
@@ -175,7 +174,7 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
 
     //
     // return result ...
-    return this.httpClient.post<XTokenResponse>(endPointPath, body, {
+    return this.httpClient.post<XTokenResponseDto>(endPointPath, body, {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
@@ -282,15 +281,15 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
   public refreshTokens(
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<XTokenResponse>;
+  ): Observable<XTokenResponseDto>;
   public refreshTokens(
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<XTokenResponse>>;
+  ): Observable<HttpResponse<XTokenResponseDto>>;
   public refreshTokens(
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<XTokenResponse>>;
+  ): Observable<HttpEvent<XTokenResponseDto>>;
   public refreshTokens(
     observe: any = 'body',
     reportProgress: boolean = false
@@ -311,12 +310,97 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
 
     //
     // return result ...
-    return this.httpClient.post<XTokenResponse>(endPointPath, null, {
+    return this.httpClient.post<XTokenResponseDto>(endPointPath, null, {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
       reportProgress,
     });
+  }
+
+  /**
+   * Validate Revision Checksum
+   *
+   * @param revision token renew Revision
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public validateRevision(
+    revision: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<boolean>;
+  public validateRevision(
+    revision: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<boolean>>;
+  public validateRevision(
+    revision: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<boolean>>;
+  public validateRevision(
+    revision: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    XValidators.validateNotEmpty(revision);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+    headers = this.addContentType(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Validate);
+
+    //
+    // return result ...
+    return this.httpClient.post<boolean>(
+      endPointPath,
+      { revision },
+      {
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe,
+        reportProgress,
+      }
+    );
+  }
+
+  /**
+   * Logout User ...
+   */
+  public async logout(returnUrl?: string) {
+    //
+    const isLoggedIn = await this.isLoggedIn();
+    if (!isLoggedIn) {
+      throwException(XExceptionIDs.NotAllowed);
+    }
+
+    //
+    const defUserId = await this.getDefaultUserIdentifier();
+    XValidators.validateNotEmpty(defUserId);
+
+    //
+    const defUser = await this.getDefaultUser();
+    XValidators.validateNotNull(defUser);
+
+    //
+    await this.removeDefaultUser(true);
+
+    //
+    if (!isNullOrEmptyString(returnUrl)) {
+      this.router.navigateByUrl(returnUrl);
+    }
   }
 
   /**
@@ -377,240 +461,5 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
       observe,
       reportProgress,
     });
-  }
-
-  // /**
-  //  * ReNew Expired Token
-  //  *
-  //  * @param body an instance of XLoginRequest class which holds UserName and Password
-  //  * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-  //  * @param reportProgress flag to report request and response progress.
-  //  */
-  // public accountsReNewToken(
-  //   body: XLoginResponseDto,
-  //   observe?: 'body',
-  //   reportProgress?: boolean
-  // ): Observable<XLoginResponseDto>;
-  // public accountsReNewToken(
-  //   body: XLoginResponseDto,
-  //   observe?: 'response',
-  //   reportProgress?: boolean
-  // ): Observable<HttpResponse<XLoginResponseDto>>;
-  // public accountsReNewToken(
-  //   body: XLoginResponseDto,
-  //   observe?: 'events',
-  //   reportProgress?: boolean
-  // ): Observable<HttpEvent<XLoginResponseDto>>;
-  // public accountsReNewToken(
-  //   body: XLoginResponseDto,
-  //   observe: any = 'body',
-  //   reportProgress: boolean = false
-  // ): Observable<any> {
-  //   //
-  //   if (
-  //     isNullOrUndefined(body) ||
-  //     isNullOrEmptyString(body.accessToken) ||
-  //     isNullOrEmptyString(body.refreshToken)
-  //   ) {
-  //     throwException(XExceptionIDs.InvalidArgs);
-  //   }
-
-  //   //
-  //   // Instantiiate Headers from Default Headers ...
-  //   let headers = this.defaultHeaders;
-  //   headers = this.addAcceptJson(headers);
-  //   headers = this.addContentType(headers);
-
-  //   //
-  //   const endPointPath = `${this.baseEndPointRoute}/ReNewToken`;
-
-  //   //
-  //   // return result ...
-  //   return this.httpClient
-  //     .post<XLoginResponseDto>(endPointPath, body, {
-  //       withCredentials: this.apiConfig.withCredentials,
-  //       headers,
-  //       observe,
-  //       reportProgress,
-  //     })
-  //     .pipe(
-  //       map((res) => fromJson<XLoginResponseDto>(res)),
-  //       concatMap((res) => {
-  //         return from(this.updateUserTokens(body, res)).pipe(map((_) => res));
-  //       }),
-  //       concatMap((res) => {
-  //         return from(this.getUserByToken(body)).pipe(
-  //           map((userInfo) => {
-  //             return {
-  //               ...userInfo,
-  //               ...res,
-  //             };
-  //           })
-  //         );
-  //       }),
-  //       concatMap((userInfo) => {
-  //         return this.accountsProfile(userInfo.userSelectBy).pipe(
-  //           map((mProfile) => {
-  //             return {
-  //               ...userInfo,
-  //               profile: mProfile,
-  //               thumbnail: mProfile.profileImage,
-  //             };
-  //           })
-  //         );
-  //       }),
-  //       map((userInfo) => {
-  //         //
-  //         this.updateUserAccount(userInfo.userSelectBy, userInfo);
-
-  //         //
-  //         return {
-  //           accessToken: userInfo.accessToken,
-  //           refreshToken: userInfo.refreshToken,
-  //           expiresAt: userInfo.expiresAt,
-  //         } as XLoginResponseDto;
-  //       })
-  //     );
-  // }
-
-  // /**
-  //  * ReNew Expired Token
-  //  *
-  //  * @param body an instance of XLoginRequest class which holds UserName and Password
-  //  * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-  //  * @param reportProgress flag to report request and response progress.
-  //  */
-  // public accountsRefreshToken(
-  //   body: XLoginResponseDto,
-  //   observe?: 'body',
-  //   reportProgress?: boolean
-  // ): Observable<XLoginResponseDto>;
-  // public accountsRefreshToken(
-  //   body: XLoginResponseDto,
-  //   observe?: 'response',
-  //   reportProgress?: boolean
-  // ): Observable<HttpResponse<XLoginResponseDto>>;
-  // public accountsRefreshToken(
-  //   body: XLoginResponseDto,
-  //   observe?: 'events',
-  //   reportProgress?: boolean
-  // ): Observable<HttpEvent<XLoginResponseDto>>;
-  // public accountsRefreshToken(
-  //   body: XLoginResponseDto,
-  //   observe: any = 'body',
-  //   reportProgress: boolean = false
-  // ): Observable<any> {
-  //   //
-  //   if (
-  //     isNullOrUndefined(body) ||
-  //     isNullOrEmptyString(body.accessToken) ||
-  //     isNullOrEmptyString(body.refreshToken)
-  //   ) {
-  //     throwException(XExceptionIDs.InvalidArgs);
-  //   }
-
-  //   //
-  //   // Instantiiate Headers from Default Headers ...
-  //   let headers = this.defaultHeaders;
-  //   headers = this.addAcceptJson(headers);
-  //   headers = this.addContentType(headers);
-
-  //   //
-  //   const endPointPath = `${this.baseEndPointRoute}/RefreshToken`;
-
-  //   //
-  //   // return result ...
-  //   return this.httpClient
-  //     .post<XLoginResponseDto>(endPointPath, body, {
-  //       withCredentials: this.apiConfig.withCredentials,
-  //       headers,
-  //       observe,
-  //       reportProgress,
-  //     })
-  //     .pipe(map((res) => fromJson<XLoginResponseDto>(res)));
-  // }
-
-  // /**
-  //  * Validate Revision Checksum
-  //  *
-  //  * @param revision token renew Revision
-  //  * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-  //  * @param reportProgress flag to report request and response progress.
-  //  */
-  // public accountsValidateRevision(
-  //   revision: string,
-  //   observe?: 'body',
-  //   reportProgress?: boolean
-  // ): Observable<boolean>;
-  // public accountsValidateRevision(
-  //   revision: string,
-  //   observe?: 'response',
-  //   reportProgress?: boolean
-  // ): Observable<HttpResponse<boolean>>;
-  // public accountsValidateRevision(
-  //   revision: string,
-  //   observe?: 'events',
-  //   reportProgress?: boolean
-  // ): Observable<HttpEvent<boolean>>;
-  // public accountsValidateRevision(
-  //   revision: string,
-  //   observe: any = 'body',
-  //   reportProgress: boolean = false
-  // ): Observable<any> {
-  //   //
-  //   if (isNullOrEmptyString(revision)) {
-  //     throwException(XExceptionIDs.InvalidArgs);
-  //   }
-
-  //   //
-  //   // Instantiiate Headers from Default Headers ...
-  //   let headers = this.defaultHeaders;
-  //   headers = this.addAuthentication(headers);
-  //   headers = this.addAcceptJson(headers);
-  //   headers = this.addContentType(headers);
-
-  //   //
-  //   const endPointPath = `${this.baseEndPointRoute}/Validate`;
-
-  //   //
-  //   // return result ...
-  //   return this.httpClient.post<boolean>(
-  //     endPointPath,
-  //     { revision },
-  //     {
-  //       withCredentials: this.apiConfig.withCredentials,
-  //       headers,
-  //       observe,
-  //       reportProgress,
-  //     }
-  //   );
-  // }
-
-  /**
-   * Logout User ...
-   */
-  public async accountLogout(): Promise<void> {
-    //
-    const isLoggedIn = await this.isLoggedIn();
-    if (!isLoggedIn) {
-      throwException(XExceptionIDs.NotAllowed);
-    }
-
-    //
-    const defUserId = await this.getDefaultUserIdentifier();
-    XValidators.validateNotEmpty(defUserId);
-
-    //
-    const defUser = await this.getDefaultUser();
-    XValidators.validateNotNull(defUser);
-
-    //
-    await this.removeDefaultUser(true);
-
-    //
-    const returnUrl = this.router.url;
-    this.router.navigateByUrl(
-      `account/login?${XHeaders.ReturnUrl}=${returnUrl}`
-    );
   }
 }

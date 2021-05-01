@@ -10,12 +10,12 @@ export interface XLoginRequestDto extends XBaseRequestDto {
   language?: XLocale;
 }
 
-export interface XTokenResponse extends XBaseResponseDto {
+export interface XTokenResponseDto extends XBaseResponseDto {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
 }
 
-export interface XLoginResponseDto extends XTokenResponse {
+export interface XLoginResponseDto extends XTokenResponseDto {
   profile: XUserProfileDto;
 }
