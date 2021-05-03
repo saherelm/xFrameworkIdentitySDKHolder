@@ -2,15 +2,15 @@ import {
   XParam,
   XLocale,
   XHeaders,
+  hasChild,
   XLoggable,
+  XKeyValue,
   XContentType,
   XExceptionIDs,
+  XOneOrManyType,
   throwException,
   isNullOrUndefined,
   isNullOrEmptyString,
-  XOneOrManyType,
-  XKeyValue,
-  hasChild,
 } from 'x-framework-core';
 import { Inject } from '@angular/core';
 import {
@@ -18,14 +18,14 @@ import {
   X_FRAMEWORK_IDENTITY_SDK_CONFIG,
 } from '../tokens/x-injectable-tokens';
 import { XQueryDto } from '../models/x-query.dto';
-import { XLoginResponseDto, XTokenResponseDto } from '../models/x-login.dto';
+import { setParams } from '../tools/x-endpoint.tools';
 import { XEndPoints } from '../typings/x-endpoint.typings';
 import { XHttpUrlEncodingCodec } from '../providers/x-url.encoder';
 import { XApiConfiguration } from '../config/x-api-service.config';
 import { getAuthorizationHeaderValue } from '../constants/x-header.enum';
 import { HttpHeaders, HttpClient, HttpParams } from '@angular/common/http';
+import { XLoginResponseDto, XTokenResponseDto } from '../models/x-login.dto';
 import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.config';
-import { setParams } from '../tools/x-endpoint.tools';
 
 export abstract class XBaseApiService extends XLoggable {
   //
@@ -111,11 +111,11 @@ export abstract class XBaseApiService extends XLoggable {
   /**
    * adding Authentication & Authorization headers
    */
-   public addAuthentication(
+  public addAuthentication(
     headers: HttpHeaders,
     tokens?: XTokenResponseDto
   ): HttpHeaders;
-   public addAuthentication(
+  public addAuthentication(
     headers: HttpHeaders,
     tokens?: XLoginResponseDto
   ): HttpHeaders {
@@ -136,10 +136,25 @@ export abstract class XBaseApiService extends XLoggable {
     // if Provide Tokens read and apply from it ...
     if (tokens) {
       //
-      headers = headers.set(
-        XHeaders.Authorization,
-        getAuthorizationHeaderValue(tokens.accessToken)
-      );
+      // Access Token ...
+      if (!isNullOrEmptyString(tokens.accessToken)) {
+        headers = headers.set(
+          XHeaders.Authorization,
+          getAuthorizationHeaderValue(tokens.accessToken)
+        );
+      }
+
+      //
+      // Refresh Token ...
+      if (!isNullOrEmptyString(tokens.refreshToken)) {
+        headers = headers.set(XHeaders.RefreshToken, tokens.refreshToken);
+      }
+
+      //
+      // Expired At ...
+      if (!isNullOrUndefined(tokens.expiresAt)) {
+        headers = headers.set(XHeaders.ExpiresAt, tokens.expiresAt.toString());
+      }
     }
 
     //

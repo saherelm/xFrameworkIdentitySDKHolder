@@ -619,9 +619,31 @@ export abstract class XAccountBaseService extends XBaseApiService {
   //
   //#region Account Handler ...
   /**
+   * retrieve current user tokens ...
+   *
+   * @returns an instance of XTokenResponse
+   */
+  public retrieveTokens(): XTokenResponseDto {
+    //
+    if (isNullOrUndefined(this.stateSnapshot)) {
+      return null;
+    }
+
+    //
+    const result: XTokenResponseDto = {
+      accessToken: this.stateSnapshot.accessToken,
+      refreshToken: this.stateSnapshot.refreshToken,
+      expiresAt: this.stateSnapshot.expiresAt,
+    };
+
+    //
+    return result;
+  }
+
+  /**
    * reNew Account State ...
    */
-  async reNewState(state?: XAccountState): Promise<void> {
+  public async reNewState(state?: XAccountState): Promise<void> {
     //
     const currState = await this.currentState();
     this.state$.next({
@@ -633,7 +655,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * retrieve current Account State ...
    */
-  async currentState(): Promise<XAccountState> {
+  public async currentState(): Promise<XAccountState> {
     //
     let isLoggedIn = false;
     let defaultUser = await this.getDefaultUser();
@@ -692,7 +714,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
 
   //
   //#region IsLoggedIn ...
-  async isLoggedIn(): Promise<boolean> {
+  public async isLoggedIn(): Promise<boolean> {
     //
     const defId = await this.getDefaultUserIdentifier();
 
@@ -700,7 +722,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
     return !isNullOrEmptyString(defId);
   }
 
-  async isExpired(): Promise<boolean> {
+  public async isExpired(): Promise<boolean> {
     //
     const defaultUser = await this.getDefaultUser();
     if (!defaultUser) {
@@ -732,7 +754,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    *
    * @param userSelectBy user identifier
    */
-  async hasUserAccount(userSelectBy: string): Promise<boolean> {
+  public async hasUserAccount(userSelectBy: string): Promise<boolean> {
     //
     XValidators.validateNotEmpty(userSelectBy);
 
@@ -764,7 +786,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    *
    * @param userSelectBy user identifier
    */
-  async getUserAccount(userSelectBy: string): Promise<XUserAccountInfo> {
+  public async getUserAccount(userSelectBy: string): Promise<XUserAccountInfo> {
     //
     XValidators.validateNotEmpty(userSelectBy);
 
@@ -797,7 +819,9 @@ export abstract class XAccountBaseService extends XBaseApiService {
    *
    * @param info the user tokens info
    */
-  async getUserByToken(info: XLoginResponseDto): Promise<XUserAccountInfo> {
+  public async getUserByToken(
+    info: XLoginResponseDto
+  ): Promise<XUserAccountInfo> {
     //
     const accounts = await this.getAccountsAsArray();
     if (!hasChild(accounts)) {
@@ -825,7 +849,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    * @param userSelectBy user identifier
    * @param accountInfo user logged in account info
    */
-  async addUserAccount(
+  public async addUserAccount(
     userSelectBy: string,
     accountInfo: XUserAccountInfo,
     setAsDefault?: boolean
@@ -866,7 +890,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    * @param userSelectBy user identifier
    * @param accountInfo user logged in account info
    */
-  async updateUserAccount(
+  public async updateUserAccount(
     userSelectBy: string,
     accountInfo: XUserAccountInfo,
     setAsDefault?: boolean
@@ -895,7 +919,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
     await this.reNewState();
   }
 
-  async updateUserProfile(profile: XUserProfileDto): Promise<void> {
+  public async updateUserProfile(profile: XUserProfileDto): Promise<void> {
     //
     XValidators.validateNotNull(profile);
 
@@ -922,7 +946,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    * @param userSelectBy user identifier
    * @param accountInfo user logged in account info
    */
-  async addOrUpdateUserAccount(
+  public async addOrUpdateUserAccount(
     userSelectBy: string,
     accountInfo: XUserAccountInfo,
     setAsDefault?: boolean
@@ -949,11 +973,11 @@ export abstract class XAccountBaseService extends XBaseApiService {
    * @param oldInfo user's old token's info ...
    * @param newInfo new user's token info which returned after token refreshing ...
    */
-  async updateUserTokens(
+  public async updateUserTokens(
     oldInfo: XLoginResponseDto,
     newInfo: XTokenResponseDto
   ): Promise<void>;
-  async updateUserTokens(
+  public async updateUserTokens(
     oldInfo: XLoginResponseDto,
     newInfo: XLoginResponseDto
   ): Promise<void> {
@@ -992,7 +1016,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    *
    * @param userSelectBy user identifier
    */
-  async removeUserAccount(userSelectBy: string): Promise<void> {
+  public async removeUserAccount(userSelectBy: string): Promise<void> {
     //
     XValidators.validateNotEmpty(userSelectBy);
 
@@ -1031,7 +1055,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * Check a User Identifier is Defualt User or not
    */
-  async isDefaultUser(userSelectBy: string): Promise<boolean> {
+  public async isDefaultUser(userSelectBy: string): Promise<boolean> {
     //
     XValidators.validateNotEmpty(userSelectBy);
 
@@ -1054,7 +1078,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * read default user account identifier ...
    */
-  async getDefaultUserIdentifier(): Promise<string> {
+  public async getDefaultUserIdentifier(): Promise<string> {
     //
     const result = this.managerService.secureStorageService.readOfType<string>(
       XAccountStorageKeys.DefaultUser,
@@ -1068,7 +1092,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * retrieve default user account info
    */
-  async getDefaultUser(): Promise<XUserAccountInfo> {
+  public async getDefaultUser(): Promise<XUserAccountInfo> {
     //
     const defaultUserIdentifier = await this.getDefaultUserIdentifier();
     if (isNullOrEmptyString(defaultUserIdentifier)) {
@@ -1082,7 +1106,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
     return result;
   }
 
-  async getDefaultUserTokens(): Promise<XLoginResponseDto> {
+  public async getDefaultUserTokens(): Promise<XLoginResponseDto> {
     //
     const defaultUser = await this.getDefaultUser();
     if (!defaultUser) {
@@ -1106,7 +1130,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    *
    * @param userSelectBy user identifier
    */
-  async setDefaultUser(userSelectBy: string): Promise<void> {
+  public async setDefaultUser(userSelectBy: string): Promise<void> {
     //
     XValidators.validateNotEmpty(userSelectBy);
 
@@ -1130,7 +1154,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * Remove default user account
    */
-  async removeDefaultUser(forceRemoveUser?: boolean): Promise<void> {
+  public async removeDefaultUser(forceRemoveUser?: boolean): Promise<void> {
     //
     const defId = await this.getDefaultUserIdentifier();
     if (isNullOrEmptyString(defId)) {
@@ -1164,7 +1188,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * count all exists accounts
    */
-  async countAccounts(): Promise<number> {
+  public async countAccounts(): Promise<number> {
     //
     const accounts = await this.getAccountsAsArray();
 
@@ -1182,7 +1206,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * retrieve all exists accounts
    */
-  async getAccounts(): Promise<XUserAccountInfoIndex> {
+  public async getAccounts(): Promise<XUserAccountInfoIndex> {
     //
     const result =
       this.managerService.secureStorageService.readOfType<XUserAccountInfoIndex>(
@@ -1199,7 +1223,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
    *
    * @param model updated Accounts
    */
-  async updateAccounts(model: XUserAccountInfoIndex): Promise<void> {
+  public async updateAccounts(model: XUserAccountInfoIndex): Promise<void> {
     //
     XValidators.validateNotNull(model);
 
@@ -1217,7 +1241,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * get user accounts info as Array
    */
-  async getAccountsAsArray(): Promise<XUserAccountInfo[]> {
+  public async getAccountsAsArray(): Promise<XUserAccountInfo[]> {
     //
     const accounts = await this.getAccounts();
     const result = getArrayOf(accounts) || [];
@@ -1229,7 +1253,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * Remove All user Accounts
    */
-  async removeAccounts(forceReNewState?: boolean): Promise<void> {
+  public async removeAccounts(forceReNewState?: boolean): Promise<void> {
     //
     this.managerService.secureStorageService.remove(
       XAccountStorageKeys.UserInfos,
@@ -1245,7 +1269,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
   /**
    * reset All Account Infos
    */
-  async resetAccounts(): Promise<void> {
+  public async resetAccounts(): Promise<void> {
     //
     const storageKeys = getKeys(XAccountStorageKeys);
 

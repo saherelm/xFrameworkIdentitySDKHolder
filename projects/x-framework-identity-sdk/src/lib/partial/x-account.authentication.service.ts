@@ -299,7 +299,10 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
     let headers = this.defaultHeaders;
     headers = this.addAcceptJson(headers);
     headers = this.addContentType(headers);
-    headers = this.addAuthentication(headers);
+
+    //
+    const tokens = this.retrieveTokens();
+    headers = this.addAuthentication(headers, tokens);
 
     //
     // Prepare Endpoint
