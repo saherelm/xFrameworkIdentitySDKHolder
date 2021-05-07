@@ -997,4 +997,124 @@ export abstract class XAccountRegistrationService extends XAccountFriendshipServ
     });
   }
   //#endregion
+
+  //
+  //#region ChangePassword ...
+  /**
+   * Change a User's Password
+   *
+   * @param body an instance of XActionRequestDto class which provider requirement for action
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public changePassword(
+    body: XActionRequestDto,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XActionResponseDto>;
+  public changePassword(
+    body: XActionRequestDto,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XActionResponseDto>>;
+  public changePassword(
+    body: XActionRequestDto,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XActionResponseDto>>;
+  public changePassword(
+    body: XActionRequestDto,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotNull(body, body.device);
+    XValidators.validateNotEmpty(
+      body.lang,
+      body.password,
+      body.newPassword,
+      body.returnUrl
+    );
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addContentType(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.ChangePassword);
+
+    //
+    // return result ...
+    return this.httpClient.post<XActionResponseDto>(endPointPath, body, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region ResetPassword ...
+  /**
+   * Reset Password
+   *
+   * @param body request for action
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public resetPassword(
+    body: XActionRequestDto,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<Blob>;
+  public resetPassword(
+    body: XActionRequestDto,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<Blob>>;
+  public resetPassword(
+    body: XActionRequestDto,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<Blob>>;
+  public resetPassword(
+    body: XActionRequestDto,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate ARgs ...
+    XValidators.validateNotNull(body);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAcceptJson(headers);
+    headers = this.addContentType(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.ResetPassword);
+
+    //
+    // Prepare Result ...
+    return this.httpClient.post<Blob>(endPointPath, body, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
 }

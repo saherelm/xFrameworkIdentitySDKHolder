@@ -270,7 +270,7 @@ export class ApiValidators {
         tap((_) => this.loading$.next(true)),
         debounceTime(this.config.debounceTime),
         distinctUntilChanged(),
-        concatMap((_) => this.accountService.accountsCanRegisterEmail(value)),
+        concatMap((_) => this.accountService.canRegisterEmail(value)),
         concatMap((canRegister) =>
           canRegister ? of(null) : of(this.emailErrorObject)
         ),
@@ -297,9 +297,7 @@ export class ApiValidators {
         debounceTime(this.config.debounceTime),
         distinctUntilChanged(),
         concatMap((_) =>
-          this.accountService.accountsCanRegisterMobileNumber(
-            normalValue.toString()
-          )
+          this.accountService.canRegisterMobileNumber(normalValue.toString())
         ),
         concatMap((canRegister) =>
           canRegister ? of(null) : of(this.mobileErrorObject)
@@ -325,9 +323,7 @@ export class ApiValidators {
         tap((_) => this.loading$.next(true)),
         debounceTime(this.config.debounceTime),
         distinctUntilChanged(),
-        concatMap((_) =>
-          this.accountService.accountsCanRegisterUserName(value)
-        ),
+        concatMap((_) => this.accountService.canRegisterUserName(value)),
         concatMap((canRegister) =>
           canRegister ? of(null) : of(this.userNameErrorObject)
         ),

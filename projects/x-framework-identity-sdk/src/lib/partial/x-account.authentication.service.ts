@@ -16,10 +16,6 @@ import {
   XAccountEndPoint,
   XAccountEndPointParam,
 } from '../typings/x-endpoint.typings';
-import {
-  XActionRequestDto,
-  XActionResponseDto,
-} from './../models/x-registration-dto';
 import { map, concatMap } from 'rxjs/operators';
 import { XDiscoveryDto } from '../models/x-discovery.dto';
 import { XApiScope } from '../constants/x-api-scope.enum';
@@ -424,69 +420,6 @@ export abstract class XAccountAuthenticationService extends XAccountBaseService 
     if (!isNullOrEmptyString(returnUrl)) {
       this.router.navigateByUrl(returnUrl);
     }
-  }
-  //#endregion
-
-  //
-  //#region ChangePassword ...
-  /**
-   * Change a User's Password
-   *
-   * @param body an instance of XActionRequestDto class which provider requirement for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public changePassword(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XActionResponseDto>;
-  public changePassword(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XActionResponseDto>>;
-  public changePassword(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XActionResponseDto>>;
-  public changePassword(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotNull(body, body.device);
-    XValidators.validateNotEmpty(
-      body.lang,
-      body.password,
-      body.newPassword,
-      body.returnUrl
-    );
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Endpoint
-    const endPointPath = this.getActionRoute<
-      XAccountEndPoint,
-      XAccountEndPointParam
-    >(XAccountEndPoint.ChangePassword);
-
-    //
-    // return result ...
-    return this.httpClient.post<XActionResponseDto>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
   }
   //#endregion
 }
