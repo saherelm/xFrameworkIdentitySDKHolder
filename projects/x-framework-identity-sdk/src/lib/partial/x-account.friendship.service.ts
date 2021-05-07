@@ -5,168 +5,40 @@ import {
   XFriendshipFollowerDto,
   XFriendshipFollowingDto,
 } from '../models/x-friendship.dto';
+import {
+  XAccountEndPoint,
+  XAccountEndPointParam,
+} from '../typings/x-endpoint.typings';
 import { XValidators } from 'x-framework-core';
-import { HttpResponse, HttpEvent } from '@angular/common/http';
-import { XAccountAuthenticationService } from './x-account.authentication.service';
+import { HttpEvent, HttpResponse } from '@angular/common/http';
+import { XAccountProfileService } from './x-account.profile.service';
 
-export abstract class XAccountFriendshipService extends XAccountAuthenticationService {
+export abstract class XAccountFriendshipService extends XAccountProfileService {
+  //
+  //#region Follow ...
   /**
-   * Accept a Following Request
+   * Follow a User
    *
    * @param destUser selected dest User
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsAcceptRequest(
-    destUser: string,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XFriendshipFollowerDto>;
-  public accountsAcceptRequest(
-    destUser: string,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XFriendshipFollowerDto>>;
-  public accountsAcceptRequest(
-    destUser: string,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XFriendshipFollowerDto>>;
-  public accountsAcceptRequest(
-    destUser: string,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotEmpty(destUser);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/AcceptRequest`;
-
-    //
-    // return response ...
-    return this.httpClient.post<XFriendshipFollowerDto>(endPointPath, null, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Get All Followers List Includes Blocked, Requested and etc  of Current User
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsAllFollowers(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Array<XFriendshipFollowerDto>>;
-  public accountsAllFollowers(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Array<XFriendshipFollowerDto>>>;
-  public accountsAllFollowers(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Array<XFriendshipFollowerDto>>>;
-  public accountsAllFollowers(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/AllFollowers`;
-
-    //
-    // return response ...
-    return this.httpClient.get<Array<XFriendshipFollowerDto>>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Get All Following List Includes Blocked, Requested and etc  of Current User
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsAllFollowings(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Array<XFriendshipFollowingDto>>;
-  public accountsAllFollowings(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Array<XFriendshipFollowingDto>>>;
-  public accountsAllFollowings(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Array<XFriendshipFollowingDto>>>;
-  public accountsAllFollowings(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/AllFollowings`;
-
-    //
-    // return response ...
-    return this.httpClient.get<Array<XFriendshipFollowerDto>>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Block a Follower
-   *
-   * @param destUser selected dest User
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsBlock(
+  public follow(
     destUser: string,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XFriendshipFollowingDto>;
-  public accountsBlock(
+  public follow(
     destUser: string,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XFriendshipFollowingDto>>;
-  public accountsBlock(
+  public follow(
     destUser: string,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XFriendshipFollowingDto>>;
-  public accountsBlock(
+  public follow(
     destUser: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -182,9 +54,14 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
     headers = this.addAcceptJson(headers);
 
     //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/Block`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Follow, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
 
     //
     // return response ...
@@ -195,7 +72,10 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region Cancel ...
   /**
    * Cancel Following
    *
@@ -203,22 +83,22 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsCancel(
+  public cancel(
     destUser: string,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<boolean>;
-  public accountsCancel(
+  public cancel(
     destUser: string,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<boolean>>;
-  public accountsCancel(
+  public cancel(
     destUser: string,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<boolean>>;
-  public accountsCancel(
+  public cancel(
     destUser: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -234,9 +114,14 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
     headers = this.addAcceptJson(headers);
 
     //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/Cancel`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Cancel, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
 
     //
     // return response ...
@@ -247,30 +132,33 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region UnFollowFollower ...
   /**
-   * Follow a User
+   * Unfollow a Follower
    *
    * @param destUser selected dest User
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsFollow(
+  public unFollowFollower(
     destUser: string,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<XFriendshipFollowingDto>;
-  public accountsFollow(
+  ): Observable<void>;
+  public unFollowFollower(
     destUser: string,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<XFriendshipFollowingDto>>;
-  public accountsFollow(
+  ): Observable<HttpResponse<void>>;
+  public unFollowFollower(
     destUser: string,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<XFriendshipFollowingDto>>;
-  public accountsFollow(
+  ): Observable<HttpEvent<void>>;
+  public unFollowFollower(
     destUser: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -286,9 +174,134 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
     headers = this.addAcceptJson(headers);
 
     //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/Follow`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.UnFollowFollower, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
+
+    //
+    // Result ...
+    return this.httpClient.post<void>(endPointPath, null, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region UnFollowFollowing ...
+  /**
+   * Unfollow Following
+   *
+   * @param destUser selected dest User
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public unFollowFollowing(
+    destUser: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<void>;
+  public unFollowFollowing(
+    destUser: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<void>>;
+  public unFollowFollowing(
+    destUser: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<void>>;
+  public unFollowFollowing(
+    destUser: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotEmpty(destUser);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.UnFollowFollowing, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
+
+    //
+    // return result ...
+    return this.httpClient.post<void>(endPointPath, null, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region Block ...
+  /**
+   * Block a Follower
+   *
+   * @param destUser selected dest User
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public block(
+    destUser: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XFriendshipFollowingDto>;
+  public block(
+    destUser: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XFriendshipFollowingDto>>;
+  public block(
+    destUser: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XFriendshipFollowingDto>>;
+  public block(
+    destUser: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotEmpty(destUser);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Block, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
 
     //
     // return response ...
@@ -299,535 +312,10 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
       reportProgress,
     });
   }
+  //#endregion
 
-  /**
-   * Get Specific Follower
-   *
-   * @param destUser selected dest User
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsFollower(
-    destUser: string,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XFriendshipFollowerDto>;
-  public accountsFollower(
-    destUser: string,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XFriendshipFollowerDto>>;
-  public accountsFollower(
-    destUser: string,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XFriendshipFollowerDto>>;
-  public accountsFollower(
-    destUser: string,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotEmpty(destUser);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/Follower`;
-
-    //
-    // return response ...
-    return this.httpClient.get<XFriendshipFollowerDto>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Get Follower State of a User
-   *
-   * @param destUser selected dest User
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsFollowerState(
-    destUser: string,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XFriendshipState>;
-  public accountsFollowerState(
-    destUser: string,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XFriendshipState>>;
-  public accountsFollowerState(
-    destUser: string,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XFriendshipState>>;
-  public accountsFollowerState(
-    destUser: string,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotEmpty(destUser);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/FollowerState`;
-
-    //
-    // return response ...
-    return this.httpClient.get<XFriendshipState>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Get Followers List Of Current User
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsFollowers(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Array<XFriendshipFollowerDto>>;
-  public accountsFollowers(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Array<XFriendshipFollowerDto>>>;
-  public accountsFollowers(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Array<XFriendshipFollowerDto>>>;
-  public accountsFollowers(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/Followers`;
-
-    //
-    // return result ...
-    return this.httpClient.get<Array<XFriendshipFollowerDto>>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Return Followers UserName&#x27;s List of Current User
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsFollowersList(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Array<string>>;
-  public accountsFollowersList(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Array<string>>>;
-  public accountsFollowersList(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Array<string>>>;
-  public accountsFollowersList(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/FollowersList`;
-
-    //
-    // return result ...
-    return this.httpClient.get<Array<string>>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Get Specific Following Model
-   *
-   * @param destUser selected dest User
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsFollowing(
-    destUser: string,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XFriendshipFollowingDto>;
-  public accountsFollowing(
-    destUser: string,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XFriendshipFollowingDto>>;
-  public accountsFollowing(
-    destUser: string,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XFriendshipFollowingDto>>;
-  public accountsFollowing(
-    destUser: string,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotEmpty(destUser);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/Following`;
-
-    //
-    // return result ...
-    return this.httpClient.get<XFriendshipFollowingDto>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Get Following State Relation between Specific User  and Current User
-   *
-   * @param destUser selected dest User
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsFollowingState(
-    destUser: string,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XFriendshipState>;
-  public accountsFollowingState(
-    destUser: string,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XFriendshipState>>;
-  public accountsFollowingState(
-    destUser: string,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XFriendshipState>>;
-  public accountsFollowingState(
-    destUser: string,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotEmpty(destUser);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/FollowingState`;
-
-    //
-    // return result ...
-    return this.httpClient.get<XFriendshipState>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Get Followings of Current User
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsFollowings(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Array<XFriendshipFollowingDto>>;
-  public accountsFollowings(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Array<XFriendshipFollowingDto>>>;
-  public accountsFollowings(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Array<XFriendshipFollowingDto>>>;
-  public accountsFollowings(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/Followings`;
-
-    //
-    // return result ...
-    return this.httpClient.get<Array<XFriendshipFollowingDto>>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Return Following UserName's List of Current User
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsFollowingsList(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Array<string>>;
-  public accountsFollowingsList(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Array<string>>>;
-  public accountsFollowingsList(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Array<string>>>;
-  public accountsFollowingsList(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/FollowingsList`;
-
-    //
-    // return result ...
-    return this.httpClient.get<Array<string>>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Check a User IsFollower of Requested User
-   *
-   * @param destUser selected dest User
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsIsFollower(
-    destUser: string,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<boolean>;
-  public accountsIsFollower(
-    destUser: string,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<boolean>>;
-  public accountsIsFollower(
-    destUser: string,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<boolean>>;
-  public accountsIsFollower(
-    destUser: string,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotEmpty(destUser);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/IsFollower`;
-
-    //
-    // Return result ...
-    return this.httpClient.get<boolean>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Check a User is in Followings of Current User
-   *
-   * @param destUser selected dest User
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsIsFollowing(
-    destUser: string,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<boolean>;
-  public accountsIsFollowing(
-    destUser: string,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<boolean>>;
-  public accountsIsFollowing(
-    destUser: string,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<boolean>>;
-  public accountsIsFollowing(
-    destUser: string,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotEmpty(destUser);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/IsFollowing`;
-
-    //
-    // Result ...
-    return this.httpClient.get<boolean>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Reject a Following Request
-   *
-   * @param destUser selected dest User
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsRejectRequest(
-    destUser: string,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XFriendshipFollowerDto>;
-  public accountsRejectRequest(
-    destUser: string,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XFriendshipFollowerDto>>;
-  public accountsRejectRequest(
-    destUser: string,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XFriendshipFollowerDto>>;
-  public accountsRejectRequest(
-    destUser: string,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate Args ...
-    XValidators.validateNotEmpty(destUser);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/RejectRequest`;
-
-    //
-    // Result ...
-    return this.httpClient.post<XFriendshipFollowerDto>(endPointPath, null, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
+  //
+  //#region UnBlock ...
   /**
    * Unblock a Blocked User
    *
@@ -835,22 +323,22 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsUnBlock(
+  public unBlock(
     destUser: string,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XFriendshipFollowingDto>;
-  public accountsUnBlock(
+  public unBlock(
     destUser: string,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XFriendshipFollowingDto>>;
-  public accountsUnBlock(
+  public unBlock(
     destUser: string,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XFriendshipFollowingDto>>;
-  public accountsUnBlock(
+  public unBlock(
     destUser: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -866,9 +354,14 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
     headers = this.addAcceptJson(headers);
 
     //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/UnBlock`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.UnBlock, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
 
     //
     // Resut ...
@@ -879,30 +372,33 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region AcceptRequest ...
   /**
-   * Unfollow a Follower
+   * Accept a Following Request
    *
    * @param destUser selected dest User
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsUnFollowFollower(
+  public accept(
     destUser: string,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<Blob>;
-  public accountsUnFollowFollower(
+  ): Observable<XFriendshipFollowerDto>;
+  public accept(
     destUser: string,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<Blob>>;
-  public accountsUnFollowFollower(
+  ): Observable<HttpResponse<XFriendshipFollowerDto>>;
+  public accept(
     destUser: string,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<Blob>>;
-  public accountsUnFollowFollower(
+  ): Observable<HttpEvent<XFriendshipFollowerDto>>;
+  public accept(
     destUser: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -918,43 +414,111 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
     headers = this.addAcceptJson(headers);
 
     //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/UnFollowFollower`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.AcceptRequest, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
+
+    //
+    // return response ...
+    return this.httpClient.post<XFriendshipFollowerDto>(endPointPath, null, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region RejectRequest ...
+  /**
+   * Reject a Following Request
+   *
+   * @param destUser selected dest User
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public reject(
+    destUser: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XFriendshipFollowerDto>;
+  public reject(
+    destUser: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XFriendshipFollowerDto>>;
+  public reject(
+    destUser: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XFriendshipFollowerDto>>;
+  public reject(
+    destUser: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotEmpty(destUser);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.RejectRequest, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
 
     //
     // Result ...
-    return this.httpClient.post<Blob>(endPointPath, null, {
+    return this.httpClient.post<XFriendshipFollowerDto>(endPointPath, null, {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region IsFollower ...
   /**
-   * Unfollow Following
+   * Check a User IsFollower of Requested User
    *
    * @param destUser selected dest User
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsUnFollowFollowing(
+  public isFollower(
     destUser: string,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<Blob>;
-  public accountsUnFollowFollowing(
+  ): Observable<boolean>;
+  public isFollower(
     destUser: string,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<Blob>>;
-  public accountsUnFollowFollowing(
+  ): Observable<HttpResponse<boolean>>;
+  public isFollower(
     destUser: string,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<Blob>>;
-  public accountsUnFollowFollowing(
+  ): Observable<HttpEvent<boolean>>;
+  public isFollower(
     destUser: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -970,20 +534,616 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
     headers = this.addAcceptJson(headers);
 
     //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/UnFollowFollowing`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.IsFollower, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
 
     //
-    // return result ...
-    return this.httpClient.post<Blob>(endPointPath, null, {
+    // Return result ...
+    return this.httpClient.get<boolean>(endPointPath, {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region FollowerState ...
+  /**
+   * Get Follower State of a User
+   *
+   * @param destUser selected dest User
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public followerState(
+    destUser: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XFriendshipState>;
+  public followerState(
+    destUser: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XFriendshipState>>;
+  public followerState(
+    destUser: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XFriendshipState>>;
+  public followerState(
+    destUser: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotEmpty(destUser);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.FollowerState, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
+
+    //
+    // return response ...
+    return this.httpClient.get<XFriendshipState>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region Follower ...
+  /**
+   * Get Specific Follower
+   *
+   * @param destUser selected dest User
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public follower(
+    destUser: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XFriendshipFollowerDto>;
+  public follower(
+    destUser: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XFriendshipFollowerDto>>;
+  public follower(
+    destUser: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XFriendshipFollowerDto>>;
+  public follower(
+    destUser: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotEmpty(destUser);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Follower, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
+
+    //
+    // return response ...
+    return this.httpClient.get<XFriendshipFollowerDto>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region Followers ...
+  /**
+   * Get Followers List Of Current User
+   *
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public followers(
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<Array<XFriendshipFollowerDto>>;
+  public followers(
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<Array<XFriendshipFollowerDto>>>;
+  public followers(
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<Array<XFriendshipFollowerDto>>>;
+  public followers(
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Followers);
+
+    //
+    // return result ...
+    return this.httpClient.get<Array<XFriendshipFollowerDto>>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region AllFollowers ...
+  /**
+   * Get All Followers List Includes Blocked, Requested and etc  of Current User
+   *
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public allFollowers(
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<Array<XFriendshipFollowerDto>>;
+  public allFollowers(
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<Array<XFriendshipFollowerDto>>>;
+  public allFollowers(
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<Array<XFriendshipFollowerDto>>>;
+  public allFollowers(
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.AllFollowers);
+
+    //
+    // return response ...
+    return this.httpClient.get<Array<XFriendshipFollowerDto>>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region IsFollowing ...
+  /**
+   * Check a User is in Followings of Current User
+   *
+   * @param destUser selected dest User
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public isFollowing(
+    destUser: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<boolean>;
+  public isFollowing(
+    destUser: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<boolean>>;
+  public isFollowing(
+    destUser: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<boolean>>;
+  public isFollowing(
+    destUser: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotEmpty(destUser);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.IsFollowing, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
+
+    //
+    // Result ...
+    return this.httpClient.get<boolean>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region FollowingState ...
+  /**
+   * Get Following State Relation between Specific User  and Current User
+   *
+   * @param destUser selected dest User
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public followingState(
+    destUser: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XFriendshipState>;
+  public followingState(
+    destUser: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XFriendshipState>>;
+  public followingState(
+    destUser: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XFriendshipState>>;
+  public followingState(
+    destUser: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotEmpty(destUser);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.FollowingState, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
+
+    //
+    // return result ...
+    return this.httpClient.get<XFriendshipState>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region Following ...
+  /**
+   * Get Specific Following Model
+   *
+   * @param destUser selected dest User
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public following(
+    destUser: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XFriendshipFollowingDto>;
+  public following(
+    destUser: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XFriendshipFollowingDto>>;
+  public following(
+    destUser: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XFriendshipFollowingDto>>;
+  public following(
+    destUser: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotEmpty(destUser);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Following, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
+
+    //
+    // return result ...
+    return this.httpClient.get<XFriendshipFollowingDto>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region Followings ...
+  /**
+   * Get Followings of Current User
+   *
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public followings(
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<Array<XFriendshipFollowingDto>>;
+  public followings(
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<Array<XFriendshipFollowingDto>>>;
+  public followings(
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<Array<XFriendshipFollowingDto>>>;
+  public followings(
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Followings);
+
+    //
+    // return result ...
+    return this.httpClient.get<Array<XFriendshipFollowingDto>>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region AllFollowings ...
+  /**
+   * Get All Following List Includes Blocked, Requested and etc  of Current User
+   *
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public allFollowings(
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<Array<XFriendshipFollowingDto>>;
+  public allFollowings(
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<Array<XFriendshipFollowingDto>>>;
+  public allFollowings(
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<Array<XFriendshipFollowingDto>>>;
+  public allFollowings(
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.AllFollowings);
+
+    //
+    // return response ...
+    return this.httpClient.get<Array<XFriendshipFollowingDto>>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region FollowingsList ...
+  /**
+   * Return Following UserName's List of Current User
+   *
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public followingsList(
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<Array<string>>;
+  public followingsList(
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<Array<string>>>;
+  public followingsList(
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<Array<string>>>;
+  public followingsList(
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.FollowingsList);
+
+    //
+    // return result ...
+    return this.httpClient.get<Array<string>>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region FollowersList ...
+  /**
+   * Return Followers UserName&#x27;s List of Current User
+   *
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public followersList(
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<Array<string>>;
+  public followersList(
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<Array<string>>>;
+  public followersList(
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<Array<string>>>;
+  public followersList(
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.FollowersList);
+
+    //
+    // return result ...
+    return this.httpClient.get<Array<string>>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region FriendshipInfo ...
   /**
    * Get Friendship Info Model between Specific User and Current User
    *
@@ -991,22 +1151,22 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsFriendshipInfo(
+  public friendshipInfo(
     destUser: string,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XFriendshipInfoDto>;
-  public accountsFriendshipInfo(
+  public friendshipInfo(
     destUser: string,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XFriendshipInfoDto>>;
-  public accountsFriendshipInfo(
+  public friendshipInfo(
     destUser: string,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XFriendshipInfoDto>>;
-  public accountsFriendshipInfo(
+  public friendshipInfo(
     destUser: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -1022,10 +1182,14 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
     headers = this.addAcceptJson(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/FriendshipInfo`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.FriendshipInfo, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
 
     //
     // Prepare Result ...
@@ -1036,4 +1200,5 @@ export abstract class XAccountFriendshipService extends XAccountAuthenticationSe
       reportProgress,
     });
   }
+  //#endregion
 }

@@ -1,20 +1,141 @@
-import { Observable } from 'rxjs';
 import {
   XUserProfileDto,
+  XProfileImageDto,
   XUserNameIdRequestDto,
   XUserNameIdResponseDto,
   XProfileUpdateRequestDto,
 } from '../models/x-user.dto';
+import { Observable } from 'rxjs';
 import {
-  XActionRequestDto,
-  XActionResponseDto,
-} from '../models/x-registration-dto';
+  XAccountEndPoint,
+  XAccountEndPointParam,
+} from '../typings/x-endpoint.typings';
 import { XHeaders, XValidators } from 'x-framework-core';
 import { HttpResponse, HttpEvent } from '@angular/common/http';
 import { XQueryDto, XQueryResultDto } from '../models/x-query.dto';
-import { XAccountRegistrationService } from './x-account.registration.service';
+import { XAccountAuthenticationService } from './x-account.authentication.service';
 
-export abstract class XAccountProfileService extends XAccountRegistrationService {
+export abstract class XAccountProfileService extends XAccountAuthenticationService {
+  //
+  //#region GetNames ...
+  /**
+   * Get UserName's Related to a Collection of user identifiers
+   *
+   * @param ids selected user identifiers
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public getNames(
+    ids: string,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<string[]>;
+  public getNames(
+    ids: string,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<string[]>>;
+  public getNames(
+    ids: string,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<string[]>>;
+  public getNames(
+    ids: string,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate ARgs ...
+    XValidators.validateNotEmpty(ids);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.GetNames, {
+      key: XAccountEndPointParam.XIds,
+      value: ids,
+    });
+
+    //
+    // Prepare Result ...
+    return this.httpClient.get<string[]>(endPointPath, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region GetNameIds ...
+  /**
+   * Get UserName's Related to a Collection of user id's
+   *
+   * @param model selected user identifiers
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public getNameIds(
+    model: XUserNameIdRequestDto,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XUserNameIdResponseDto[]>;
+  public getNameIds(
+    model: XUserNameIdRequestDto,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XUserNameIdResponseDto[]>>;
+  public getNameIds(
+    model: XUserNameIdRequestDto,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XUserNameIdResponseDto[]>>;
+  public getNameIds(
+    model: XUserNameIdRequestDto,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate ARgs ...
+    XValidators.validateNotNull(model);
+    XValidators.validateHasChilds(model.ids);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.GetNameIds);
+
+    //
+    // Prepare Result ...
+    return this.httpClient.post<XUserNameIdResponseDto[]>(endPointPath, model, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region Profile ...
   /**
    * Get Profile Object of Specific User
    *
@@ -22,22 +143,22 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsProfile(
+  public getProfile(
     userSelectBy: string,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XUserProfileDto>;
-  public accountsProfile(
+  public getProfile(
     userSelectByParam: string,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XUserProfileDto>>;
-  public accountsProfile(
+  public getProfile(
     userSelectByParam: string,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XUserProfileDto>>;
-  public accountsProfile(
+  public getProfile(
     userSelectByParam: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -54,10 +175,14 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
     headers = this.addContentType(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(userSelectByParam)
-    )}/Profile`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Profile, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: userSelectByParam,
+    });
 
     //
     // Prepare Result ...
@@ -68,33 +193,163 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region QueryProfiles ...
   /**
-   * Get Profile Object of Specific User
+   * query user profiles
    *
-   * @param userSelectBy selected user identifier
+   * @param query an instance of XQuery interface which provide projectio data
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsProfileUpdate(
-    userSelectBy: string,
+  public queryProfiles(
+    query?: XQueryDto,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XQueryResultDto<XUserProfileDto>>;
+  public queryProfiles(
+    query?: XQueryDto,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XQueryResultDto<XUserProfileDto>>>;
+  public queryProfiles(
+    query?: XQueryDto,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XQueryResultDto<XUserProfileDto>>>;
+  public queryProfiles(
+    query?: XQueryDto,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    const queryParameters = this.generateXQueryHttpParams(query);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+    headers = this.addContentType(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.QueryProfiles);
+
+    //
+    // Prepare Result ...
+    return this.httpClient.get<XQueryResultDto<XUserProfileDto>>(endPointPath, {
+      params: queryParameters,
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region QueryAvatars ...
+  /**
+   * query specific users avatars ...
+   *
+   * @param userSelectByParam user identifier
+   * @param query an instance of XQuery interface which provide projectio data
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public queryAvatars(
+    userSelectByParam?: string,
+    query?: XQueryDto,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XQueryResultDto<XProfileImageDto>>;
+  public queryAvatars(
+    userSelectByParam?: string,
+    query?: XQueryDto,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XQueryResultDto<XProfileImageDto>>>;
+  public queryAvatars(
+    userSelectByParam?: string,
+    query?: XQueryDto,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XQueryResultDto<XProfileImageDto>>>;
+  public queryAvatars(
+    userSelectByParam?: string,
+    query?: XQueryDto,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    const queryParameters = this.generateXQueryHttpParams(query);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+    headers = this.addContentType(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.QueryAvatars, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: userSelectByParam,
+    });
+
+    //
+    // Prepare Result ...
+    return this.httpClient.get<XQueryResultDto<XProfileImageDto>>(
+      endPointPath,
+      {
+        params: queryParameters,
+        withCredentials: this.apiConfig.withCredentials,
+        headers,
+        observe,
+        reportProgress,
+      }
+    );
+  }
+  //#endregion
+
+  //
+  //#region ProfileUpdate ...
+  /**
+   * Update Specific User's Profile
+   *
+   * @param userSelectByParam selected user identifier
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public updateProfile(
+    userSelectByParam: string,
     body: XProfileUpdateRequestDto,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XUserProfileDto>;
-  public accountsProfileUpdate(
+  public updateProfile(
     userSelectByParam: string,
     body: XProfileUpdateRequestDto,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XUserProfileDto>>;
-  public accountsProfileUpdate(
+  public updateProfile(
     userSelectByParam: string,
     body: XProfileUpdateRequestDto,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XUserProfileDto>>;
-  public accountsProfileUpdate(
+  public updateProfile(
     userSelectByParam: string,
     body: XProfileUpdateRequestDto,
     observe: any = 'body',
@@ -113,10 +368,14 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
     headers = this.addContentType(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(userSelectByParam)
-    )}/ProfileUpdate`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.ProfileUpdate, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: userSelectByParam,
+    });
 
     //
     // Prepare Result ...
@@ -127,81 +386,98 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region FullProfileUpdate ...
   /**
-   * Get UserName's Related to a Collection of user id's
+   * Update Specific User's Profile
    *
-   * @param model selected user identifiers
+   * @param userSelectByParam selected user identifier
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsUserNameIds(
-    model: XUserNameIdRequestDto,
+  public fullUpdateProfile(
+    userSelectByParam: string,
+    body: XProfileUpdateRequestDto,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<XUserNameIdResponseDto>;
-  public accountsUserNameIds(
-    model: XUserNameIdRequestDto,
+  ): Observable<XUserProfileDto>;
+  public fullUpdateProfile(
+    userSelectByParam: string,
+    body: XProfileUpdateRequestDto,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<XUserNameIdResponseDto>>;
-  public accountsUserNameIds(
-    model: XUserNameIdRequestDto,
+  ): Observable<HttpResponse<XUserProfileDto>>;
+  public fullUpdateProfile(
+    userSelectByParam: string,
+    body: XProfileUpdateRequestDto,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<XUserNameIdResponseDto>>;
-  public accountsUserNameIds(
-    model: XUserNameIdRequestDto,
+  ): Observable<HttpEvent<XUserProfileDto>>;
+  public fullUpdateProfile(
+    userSelectByParam: string,
+    body: XProfileUpdateRequestDto,
     observe: any = 'body',
     reportProgress: boolean = false
   ): Observable<any> {
     //
     // Validate ARgs ...
-    XValidators.validateNotNull(model);
-    XValidators.validateHasChilds(model.ids);
+    XValidators.validateNotEmpty(userSelectByParam);
+    XValidators.validateNotNull(body);
 
     //
     // Instantiiate Headers from Default Headers ...
     let headers = this.defaultHeaders;
     headers = this.addAuthentication(headers);
     headers = this.addAcceptJson(headers);
+    headers = this.addContentType(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/UserNameIds`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.FullProfileUpdate, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: userSelectByParam,
+    });
 
     //
     // Prepare Result ...
-    return this.httpClient.post<XUserNameIdResponseDto[]>(endPointPath, model, {
+    return this.httpClient.post<XUserProfileDto>(endPointPath, body, {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region AddAvatar ...
   /**
    * Add a New Profile Image
    *
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsAddProfileImage(
+  public addAvatar(
     body: File,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XUserProfileDto>;
-  public accountsAddProfileImage(
+  public addAvatar(
     body: File,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XUserProfileDto>>;
-  public accountsAddProfileImage(
+  public addAvatar(
     body: File,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XUserProfileDto>>;
-  public accountsAddProfileImage(
+  public addAvatar(
     body: File,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -220,8 +496,11 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
     headers = this.addAuthentication(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/AddProfileImage`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.AddAvatar);
 
     //
     // Prepare Result ...
@@ -233,28 +512,32 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
     });
   }
 
+  //#endregion
+
+  //
+  //#region AddAvatars ...
   /**
    * Add a Collection of Profile Images
    *
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsAddProfileImages(
+  public addAvatars(
     body: File[],
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XUserProfileDto>;
-  public accountsAddProfileImages(
+  public addAvatars(
     body: File[],
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XUserProfileDto>>;
-  public accountsAddProfileImages(
+  public addAvatars(
     body: File[],
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XUserProfileDto>>;
-  public accountsAddProfileImages(
+  public addAvatars(
     body: File[],
     observe: any = 'body',
     reportProgress: boolean = false
@@ -275,8 +558,11 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
     headers = this.addAuthentication(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/AddProfileImages`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.AddAvatars);
 
     //
     // Prepare Result ...
@@ -287,7 +573,71 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region SetAvatar ...
+  /**
+   * set Specified Profile Image as Avatar
+   *
+   * @param id profile image id
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public setAvatar(
+    id: number,
+    observe?: 'body',
+    reportProgress?: boolean
+  ): Observable<XUserProfileDto>;
+  public setAvatar(
+    id: number,
+    observe?: 'response',
+    reportProgress?: boolean
+  ): Observable<HttpResponse<XUserProfileDto>>;
+  public setAvatar(
+    id: number,
+    observe?: 'events',
+    reportProgress?: boolean
+  ): Observable<HttpEvent<XUserProfileDto>>;
+  public setAvatar(
+    id: number,
+    observe: any = 'body',
+    reportProgress: boolean = false
+  ): Observable<any> {
+    //
+    // Validate Args ...
+    XValidators.validateNotNull(id);
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+    headers = this.addContentType(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.SetAvatar, {
+      key: XAccountEndPointParam.XId,
+      value: id.toString(),
+    });
+
+    //
+    // Prepare Result ...
+    return this.httpClient.post<XUserProfileDto>(endPointPath, null, {
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
+  }
+  //#endregion
+
+  //
+  //#region RemoveAvatars ...
   /**
    * Remove Profile Images
    *
@@ -295,22 +645,22 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsRemoveProfileImage(
+  public removeAvatars(
     ids: string,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<XUserProfileDto>;
-  public accountsRemoveProfileImage(
+  public removeAvatars(
     ids: string,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<XUserProfileDto>>;
-  public accountsRemoveProfileImage(
+  public removeAvatars(
     ids: string,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<XUserProfileDto>>;
-  public accountsRemoveProfileImage(
+  public removeAvatars(
     ids: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -327,10 +677,14 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
     headers = this.addContentType(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${
-      this.baseEndPointRoute
-    }/RemoveProfileImage/${encodeURIComponent(String(ids))}`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.RemoveAvatars, {
+      key: XAccountEndPointParam.XIds,
+      value: ids,
+    });
 
     //
     // Prepare Result ...
@@ -341,648 +695,5 @@ export abstract class XAccountProfileService extends XAccountRegistrationService
       reportProgress,
     });
   }
-
-  /**
-   * Request For Email Address Change/ Confirm
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsRequestConfirmEmail(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XActionResponseDto>;
-  public accountsRequestConfirmEmail(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XActionResponseDto>>;
-  public accountsRequestConfirmEmail(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XActionResponseDto>>;
-  public accountsRequestConfirmEmail(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/RequestConfirmEmail`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<XActionResponseDto>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Request For Mobile Number Change/ Confirm
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsRequestConfirmMobile(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XActionResponseDto>;
-  public accountsRequestConfirmMobile(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XActionResponseDto>>;
-  public accountsRequestConfirmMobile(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XActionResponseDto>>;
-  public accountsRequestConfirmMobile(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/RequestConfirmMobile`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<XActionResponseDto>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Request Registration Confirm
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsRequestConfirmRegistration(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Blob>;
-  public accountsRequestConfirmRegistration(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Blob>>;
-  public accountsRequestConfirmRegistration(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Blob>>;
-  public accountsRequestConfirmRegistration(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/RequestConfirmRegistration`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<Blob>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Request Reset Password Action
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsRequestResetPassword(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Blob>;
-  public accountsRequestResetPassword(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Blob>>;
-  public accountsRequestResetPassword(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Blob>>;
-  public accountsRequestResetPassword(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/RequestResetPassword`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<Blob>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   *  Check User is Confirmed Mobile or not
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsIsConfirmedMobile(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<boolean>;
-  public accountsIsConfirmedMobile(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<boolean>>;
-  public accountsIsConfirmedMobile(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<boolean>>;
-  public accountsIsConfirmedMobile(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/IsConfirmedMobile`;
-
-    //
-    // return result ...
-    return this.httpClient.get<boolean>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   *  Check User is Confirmed Email or not
-   *
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsIsConfirmedEmail(
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<boolean>;
-  public accountsIsConfirmedEmail(
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<boolean>>;
-  public accountsIsConfirmedEmail(
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<boolean>>;
-  public accountsIsConfirmedEmail(
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-
-    //
-    const endPointPath = `${this.baseEndPointRoute}/IsConfirmedEmail`;
-
-    //
-    // return result ...
-    return this.httpClient.get<boolean>(endPointPath, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Confirm Mobile Number
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsConfirmMobile(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XActionResponseDto>;
-  public accountsConfirmMobile(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XActionResponseDto>>;
-  public accountsConfirmMobile(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XActionResponseDto>>;
-  public accountsConfirmMobile(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/ConfirmMobileNumber`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<XActionResponseDto>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Confirm Email Address
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsConfirmEmail(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XActionResponseDto>;
-  public accountsConfirmEmail(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XActionResponseDto>>;
-  public accountsConfirmEmail(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XActionResponseDto>>;
-  public accountsConfirmEmail(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/ConfirmEmailAddress`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<XActionResponseDto>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Confirm Registration ...
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsConfirmRegistration(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Blob>;
-  public accountsConfirmRegistration(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Blob>>;
-  public accountsConfirmRegistration(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Blob>>;
-  public accountsConfirmRegistration(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/ConfirmRegistration`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<Blob>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Change a User&#x27;s Password ...
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsChangePassword(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<void>;
-  public accountsChangePassword(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<void>>;
-  public accountsChangePassword(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<void>>;
-  public accountsChangePassword(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/ChangePassword`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<void>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * Reset Password
-   *
-   * @param body request for action
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsResetPassword(
-    body: XActionRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<Blob>;
-  public accountsResetPassword(
-    body: XActionRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<Blob>>;
-  public accountsResetPassword(
-    body: XActionRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<Blob>>;
-  public accountsResetPassword(
-    body: XActionRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Validate ARgs ...
-    XValidators.validateNotNull(body);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/ResetPassword`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<Blob>(endPointPath, body, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * set Specified Profile Image as Avatar
-   *
-   * @param id profile image id
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsSetAsAvatar(
-    id: number,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XUserProfileDto>;
-  public accountsSetAsAvatar(
-    id: number,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XUserProfileDto>>;
-  public accountsSetAsAvatar(
-    id: number,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XUserProfileDto>>;
-  public accountsSetAsAvatar(
-    id: number,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      id.toString()
-    )}/SetAsAvatar`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.post<XUserProfileDto>(endPointPath, null, {
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
-
-  /**
-   * query user profiles
-   *
-   * @param query an instance of XQuery interface which provide projectio data
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public accountsGetUsers(
-    query?: XQueryDto,
-    observe?: 'body',
-    reportProgress?: boolean
-  ): Observable<XQueryResultDto<XUserProfileDto>>;
-  public accountsGetUsers(
-    query?: XQueryDto,
-    observe?: 'response',
-    reportProgress?: boolean
-  ): Observable<HttpResponse<XQueryResultDto<XUserProfileDto>>>;
-  public accountsGetUsers(
-    query?: XQueryDto,
-    observe?: 'events',
-    reportProgress?: boolean
-  ): Observable<HttpEvent<XQueryResultDto<XUserProfileDto>>>;
-  public accountsGetUsers(
-    query?: XQueryDto,
-    observe: any = 'body',
-    reportProgress: boolean = false
-  ): Observable<any> {
-    //
-    const queryParameters = this.generateXQueryHttpParams(query);
-
-    //
-    // Instantiiate Headers from Default Headers ...
-    let headers = this.defaultHeaders;
-    headers = this.addAuthentication(headers);
-    headers = this.addAcceptJson(headers);
-    headers = this.addContentType(headers);
-
-    //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/GetUsers`;
-
-    //
-    // Prepare Result ...
-    return this.httpClient.get<XQueryResultDto<XUserProfileDto>>(endPointPath, {
-      params: queryParameters,
-      withCredentials: this.apiConfig.withCredentials,
-      headers,
-      observe,
-      reportProgress,
-    });
-  }
+  //#endregion
 }

@@ -160,10 +160,20 @@ export interface XUserNameIdRequestDto extends XBaseRequestDto {
 }
 
 export interface XProfileUpdateRequestDto extends XBaseRequestDto {
-  userId?: string;
+  email: string;
+  emailConfirmed?: boolean;
+  phoneNumber: string;
+  phoneNumberConfirmed?: boolean;
   firstName: string;
   lastName: string;
+  avatar: string;
   dateOfBirth?: Date;
+  creationDate?: Date;
+  lastLogin?: Date;
+  gender: XGender;
+  roles?: Array<string>;
+  isEnable?: boolean;
+  isBanned?: boolean;
 }
 
 export interface XChangeRoleRequest extends XBaseRequestDto {

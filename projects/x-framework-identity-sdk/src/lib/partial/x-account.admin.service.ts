@@ -1,9 +1,15 @@
 import { Observable } from 'rxjs';
+import {
+  XAccountEndPoint,
+  XAccountEndPointParam,
+} from '../typings/x-endpoint.typings';
 import { XUserNameIdRequestDto } from '../models/x-user.dto';
-import { HttpResponse, HttpEvent } from '@angular/common/http';
-import { XAccountIdentityService } from './x-account.identity.service';
+import { HttpEvent, HttpResponse } from '@angular/common/http';
+import { XAccountRegistrationService } from './x-account.registration.service';
 
-export class XAccountAdminService extends XAccountIdentityService {
+export class XAccountAdminService extends XAccountRegistrationService {
+  //
+  //#region Ban ...
   /**
    * ban users access to resources
    *
@@ -11,22 +17,22 @@ export class XAccountAdminService extends XAccountIdentityService {
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsBan(
+  public ban(
     body: XUserNameIdRequestDto,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<string[]>;
-  public accountsBan(
+  public ban(
     body: XUserNameIdRequestDto,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<string[]>>;
-  public accountsBan(
+  public ban(
     body: XUserNameIdRequestDto,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<string[]>>;
-  public accountsBan(
+  public ban(
     body: XUserNameIdRequestDto,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -39,8 +45,11 @@ export class XAccountAdminService extends XAccountIdentityService {
     headers = this.addContentType(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/Ban`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Ban);
 
     //
     // Prepare Result ...
@@ -48,10 +57,13 @@ export class XAccountAdminService extends XAccountIdentityService {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
-      reportProgress
+      reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region UnBan ...
   /**
    * unban users access to resources
    *
@@ -59,22 +71,22 @@ export class XAccountAdminService extends XAccountIdentityService {
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsUnBan(
+  public unBan(
     body: XUserNameIdRequestDto,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<string[]>;
-  public accountsUnBan(
+  public unBan(
     body: XUserNameIdRequestDto,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<string[]>>;
-  public accountsUnBan(
+  public unBan(
     body: XUserNameIdRequestDto,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<string[]>>;
-  public accountsUnBan(
+  public unBan(
     body: XUserNameIdRequestDto,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -87,8 +99,11 @@ export class XAccountAdminService extends XAccountIdentityService {
     headers = this.addContentType(headers);
 
     //
-    // Prepare Url ...
-    const endPointPath = `${this.baseEndPointRoute}/UnBan`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.UnBan);
 
     //
     // Prepare Result ...
@@ -96,10 +111,13 @@ export class XAccountAdminService extends XAccountIdentityService {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
-      reportProgress
+      reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region IsBanned ...
   /**
    * check a User is Banned or not
    *
@@ -107,22 +125,22 @@ export class XAccountAdminService extends XAccountIdentityService {
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public accountsIsBanned(
+  public isBanned(
     destUser: string,
     observe?: 'body',
     reportProgress?: boolean
   ): Observable<boolean>;
-  public accountsIsBanned(
+  public isBanned(
     destUser: string,
     observe?: 'response',
     reportProgress?: boolean
   ): Observable<HttpResponse<boolean>>;
-  public accountsIsBanned(
+  public isBanned(
     destUser: string,
     observe?: 'events',
     reportProgress?: boolean
   ): Observable<HttpEvent<boolean>>;
-  public accountsIsBanned(
+  public isBanned(
     destUser: string,
     observe: any = 'body',
     reportProgress: boolean = false
@@ -135,9 +153,14 @@ export class XAccountAdminService extends XAccountIdentityService {
     headers = this.addContentType(headers);
 
     //
-    const endPointPath = `${this.baseEndPointRoute}/${encodeURIComponent(
-      String(destUser)
-    )}/IsBanned`;
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.IsBanned, {
+      key: XAccountEndPointParam.XUserSelectByParam,
+      value: destUser,
+    });
 
     //
     // Prepare Result ...
@@ -145,7 +168,8 @@ export class XAccountAdminService extends XAccountIdentityService {
       withCredentials: this.apiConfig.withCredentials,
       headers,
       observe,
-      reportProgress
+      reportProgress,
     });
   }
+  //#endregion
 }

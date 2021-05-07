@@ -104,7 +104,7 @@ export enum XAccountEndPoint {
   FollowingState = 'Friendship/{xUserSelectByParam}/FollowingState',
   Followings = 'Friendship/Followings',
   AllFollowings = 'Friendship/AllFollowings',
-  FollowingsLis = 'Friendship/FollowingsLis',
+  FollowingsList = 'Friendship/FollowingsList',
   //#endregion
 
   //
@@ -113,7 +113,7 @@ export enum XAccountEndPoint {
   GetNameIds = 'Profile/GetNameIds',
   Profile = 'Profile/{xUserSelectByParam}',
   QueryProfiles = 'Profile/Query',
-  QueryAvatars = 'Profile/Avatars/Query',
+  QueryAvatars = 'Profile/Avatars/Query/{xUserSelectByParam}',
   ProfileUpdate = 'Profile/Update/{xUserSelectByParam}',
   FullProfileUpdate = 'Profile/{xUserSelectByParam}',
   AddAvatar = 'Profile/Avatar',

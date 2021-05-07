@@ -24,10 +24,12 @@ import { map, concatMap } from 'rxjs/operators';
 import { XDiscoveryDto } from '../models/x-discovery.dto';
 import { XApiScope } from '../constants/x-api-scope.enum';
 import { HttpResponse, HttpEvent } from '@angular/common/http';
+import { XAccountBaseService } from './x-account.base.service';
 import { XUserAccountInfo } from '../typings/x-account.typings';
-import { XAccountProfileService } from './x-account.profile.service';
 
-export abstract class XAccountAuthenticationService extends XAccountProfileService {
+export abstract class XAccountAuthenticationService extends XAccountBaseService {
+  //
+  //#region DiscoveryDocument ...
   /**
    * Retrieve Discovery Document
    *
@@ -71,7 +73,10 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region ScopeAccessToken ...
   /**
    * Request Specific Scope Access Token for API Actions
    *
@@ -121,7 +126,10 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region Authenticate ...
   /**
    * Authenticate a User
    *
@@ -181,7 +189,10 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region Login ...
   /**
    * Login a User
    *
@@ -271,7 +282,10 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
         })
       );
   }
+  //#endregion
 
+  //
+  //#region RefreshTokens ...
   /**
    * Refresh Expired Tokens
    *
@@ -320,7 +334,10 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
       reportProgress,
     });
   }
+  //#endregion
 
+  //
+  //#region Validate ...
   /**
    * Validate Revision Checksum
    *
@@ -378,7 +395,10 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
       }
     );
   }
+  //#endregion
 
+  //
+  //#region Logout ...
   /**
    * Logout User ...
    */
@@ -405,7 +425,10 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
       this.router.navigateByUrl(returnUrl);
     }
   }
+  //#endregion
 
+  //
+  //#region ChangePassword ...
   /**
    * Change a User's Password
    *
@@ -465,4 +488,5 @@ export abstract class XAccountAuthenticationService extends XAccountProfileServi
       reportProgress,
     });
   }
+  //#endregion
 }
