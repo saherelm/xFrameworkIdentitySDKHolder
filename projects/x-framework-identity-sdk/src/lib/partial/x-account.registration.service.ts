@@ -1042,6 +1042,7 @@ export abstract class XAccountRegistrationService extends XAccountFriendshipServ
     let headers = this.defaultHeaders;
     headers = this.addAcceptJson(headers);
     headers = this.addContentType(headers);
+    headers = this.addAuthentication(headers);
 
     //
     // Prepare Endpoint

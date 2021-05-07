@@ -416,6 +416,11 @@ export class ApiValidators {
     );
 
     //
+    if (!error) {
+      return '';
+    }
+
+    //
     return applyLocale(
       stringFormatter(error, length),
       this.localizationService.locale
@@ -427,6 +432,11 @@ export class ApiValidators {
     const error = this.localizationService.getValue(
       XResourceIDs.required_unique_chars
     );
+
+    //
+    if (!error) {
+      return '';
+    }
 
     //
     return applyLocale(
