@@ -1,6 +1,6 @@
 import {
+  XavatarDto,
   XUserProfileDto,
-  XProfileImageDto,
   XUserNameIdRequestDto,
   XUserNameIdResponseDto,
   XProfileUpdateRequestDto,
@@ -268,19 +268,19 @@ export abstract class XAccountProfileService extends XAccountAuthenticationServi
     query?: XQueryDto,
     observe?: 'body',
     reportProgress?: boolean
-  ): Observable<XQueryResultDto<XProfileImageDto>>;
+  ): Observable<XQueryResultDto<XavatarDto>>;
   public queryAvatars(
     userSelectByParam?: string,
     query?: XQueryDto,
     observe?: 'response',
     reportProgress?: boolean
-  ): Observable<HttpResponse<XQueryResultDto<XProfileImageDto>>>;
+  ): Observable<HttpResponse<XQueryResultDto<XavatarDto>>>;
   public queryAvatars(
     userSelectByParam?: string,
     query?: XQueryDto,
     observe?: 'events',
     reportProgress?: boolean
-  ): Observable<HttpEvent<XQueryResultDto<XProfileImageDto>>>;
+  ): Observable<HttpEvent<XQueryResultDto<XavatarDto>>>;
   public queryAvatars(
     userSelectByParam?: string,
     query?: XQueryDto,
@@ -309,7 +309,7 @@ export abstract class XAccountProfileService extends XAccountAuthenticationServi
 
     //
     // Prepare Result ...
-    return this.httpClient.get<XQueryResultDto<XProfileImageDto>>(
+    return this.httpClient.get<XQueryResultDto<XavatarDto>>(
       endPointPath,
       {
         params: queryParameters,

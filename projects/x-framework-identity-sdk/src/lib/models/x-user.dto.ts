@@ -28,11 +28,11 @@ export interface XUserProfileDto extends XBaseResponseDto {
   firstName?: string;
   lastName?: string;
   lastLogin?: Date;
-  profileImage?: string;
+  avatar?: string;
   gender?: XGender;
   friendshipInfo?: XFriendshipInfoDto;
   roles?: Array<string>;
-  profileImages?: Array<XProfileImageDto>;
+  avatars?: Array<XavatarDto>;
 
   isEnable?: boolean;
   isBanned?: boolean;
@@ -61,14 +61,14 @@ export const defaultUserProfileDto: XUserProfileDto = {
 
   //
   lastLogin: undefined,
-  profileImage: '',
+  avatar: '',
 
   //
   gender: XGender.Male,
 
   //
   roles: [],
-  profileImages: [],
+  avatars: [],
 
   //
   friendshipInfo: undefined,
@@ -119,11 +119,11 @@ export function prepareUserProfileDtoFields(
     lastLogin: model.lastLogin || defaultUserProfileDto.lastLogin,
 
     //
-    profileImage: model.profileImage || defaultUserProfileDto.profileImage,
+    avatar: model.avatar || defaultUserProfileDto.avatar,
     friendshipInfo:
       model.friendshipInfo || defaultUserProfileDto.friendshipInfo,
     roles: model.roles || defaultUserProfileDto.roles,
-    profileImages: model.profileImages || defaultUserProfileDto.profileImages,
+    avatars: model.avatars || defaultUserProfileDto.avatars,
 
     //
     isEnable: model.isEnable || defaultUserProfileDto.isEnable,
@@ -141,7 +141,7 @@ export function isDefaultUserProfileDto(model: XUserProfileDto): boolean {
   );
 }
 
-export interface XProfileImageDto extends XBaseResponseDto {
+export interface XavatarDto extends XBaseResponseDto {
   id: number;
   name: string;
   path: string;
