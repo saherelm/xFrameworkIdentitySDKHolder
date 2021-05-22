@@ -11,8 +11,8 @@ import {
 import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { map, tap, filter } from 'rxjs/operators';
-import { toRoleInfo } from '../tools/x-role.tools';
 import { Injectable, Inject } from '@angular/core';
+import { toRoleInfo } from '../tools/x-role.tools';
 import { XManagerService } from 'x-framework-services';
 import { XLoggable, XExceptionIDs, isNullOrUndefined } from 'x-framework-core';
 import { X_FRAMEWORK_IDENTITY_SDK_CONFIG } from '../tokens/x-injectable-tokens';
@@ -21,7 +21,7 @@ import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.
 @Injectable({
   providedIn: 'root',
 })
-export class BusinessOwnerGuard
+export class AdminOrAgentOrChiefActuaryGuard
   extends XLoggable
   implements CanActivate, CanActivateChild, CanLoad {
   //
@@ -79,7 +79,10 @@ export class BusinessOwnerGuard
       ),
       map((state) => state.profile),
       map((user) => toRoleInfo(user)),
-      map((roleInfo) => !!roleInfo.isBusinessOwner),
+      map(
+        (roleInfo) =>
+          !!roleInfo.isAdmin || !!roleInfo.isAgent || !!roleInfo.isChiefActuary
+      ),
       tap((isPassed) => {
         //
         if (!isPassed) {

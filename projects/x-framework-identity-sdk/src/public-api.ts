@@ -19,13 +19,18 @@ export * from './lib/models/x-registration-dto';
 
 //
 // Guards ...
-export * from './lib/guards/auth.guard';
 export * from './lib/guards/admin.guard';
 export * from './lib/guards/agent.guard';
+export * from './lib/guards/chief-actuary.guard';
+export * from './lib/guards/actuary.guard';
+export * from './lib/guards/reporter.guard';
+export * from './lib/guards/elite.guard';
+export * from './lib/guards/user.guard';
+//
+export * from './lib/guards/auth.guard';
 export * from './lib/guards/not-auth.guard';
 export * from './lib/guards/admin-or-agent.guard';
-export * from './lib/guards/business-owner.guard';
-export * from './lib/guards/admin-or-agent-or-business-owner.guard';
+export * from './lib/guards/admin-or-agent-or-chief-actuary.guard';
 
 //
 // Services ...

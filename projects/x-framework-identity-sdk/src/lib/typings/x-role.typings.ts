@@ -1,13 +1,19 @@
 export enum XAvailableRoles {
   Admin = 'admin',
   Agent = 'agent',
-  BusinessOwner = 'business_owner',
-  User = 'user'
+  ChiefActuary = 'chief_actuary',
+  Actuary = 'actuary',
+  Reporter = 'reporter',
+  Elite = 'elite',
+  User = 'user',
 }
 
 export interface XUserRoleInfo {
   isAdmin: boolean;
   isAgent: boolean;
-  isBusinessOwner: boolean;
+  isChiefActuary: boolean;
+  isActuary: boolean;
+  isReporter: boolean;
+  isElite: boolean;
   isUser: boolean;
 }
