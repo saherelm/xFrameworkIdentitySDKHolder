@@ -54,4 +54,8 @@ export interface XFrameworkIdentitySDKConfig extends XSharedConfig {
   //
   verificationCodeLength: number;
   delayBetweenTwoVerificationCode: number;
+
+  //
+  // Attach Pages Index to Handle in Guard Rejects ...
+  Pages: any;
 }

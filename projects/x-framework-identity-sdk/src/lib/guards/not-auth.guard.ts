@@ -9,9 +9,9 @@ import {
   ActivatedRouteSnapshot,
 } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthService } from '../services/auth.service';
 import { map, tap, filter } from 'rxjs/operators';
 import { Injectable, Inject } from '@angular/core';
+import { AuthService } from '../services/auth.service';
 import { XManagerService } from 'x-framework-services';
 import { XLoggable, XExceptionIDs, isNullOrUndefined } from 'x-framework-core';
 import { X_FRAMEWORK_IDENTITY_SDK_CONFIG } from '../tokens/x-injectable-tokens';
@@ -22,7 +22,8 @@ import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.
 })
 export class NotAuthGuard
   extends XLoggable
-  implements CanActivate, CanActivateChild, CanLoad {
+  implements CanActivate, CanActivateChild, CanLoad
+{
   //
   constructor(
     private authService: AuthService,
@@ -93,7 +94,7 @@ export class NotAuthGuard
     });
 
     //
-    this.managerService.navigateByUrl(this.config.Pages.Startup.route);
+    this.managerService.navigateByPageReplace(this.config.Pages.Startup);
   }
   //#endregion
 }

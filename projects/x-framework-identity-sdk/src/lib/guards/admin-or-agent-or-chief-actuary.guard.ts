@@ -9,10 +9,10 @@ import {
   ActivatedRouteSnapshot,
 } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthService } from '../services/auth.service';
 import { map, tap, filter } from 'rxjs/operators';
 import { Injectable, Inject } from '@angular/core';
 import { toRoleInfo } from '../tools/x-role.tools';
+import { AuthService } from '../services/auth.service';
 import { XManagerService } from 'x-framework-services';
 import { XLoggable, XExceptionIDs, isNullOrUndefined } from 'x-framework-core';
 import { X_FRAMEWORK_IDENTITY_SDK_CONFIG } from '../tokens/x-injectable-tokens';
@@ -101,7 +101,7 @@ export class AdminOrAgentOrChiefActuaryGuard
     });
 
     //
-    this.managerService.navigate([this.config.Pages.Login.route]);
+    this.managerService.navigateByPageReplace(this.config.Pages.Login);
   }
   //#endregion
 }

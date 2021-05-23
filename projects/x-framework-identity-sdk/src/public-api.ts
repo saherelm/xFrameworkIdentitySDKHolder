@@ -12,6 +12,7 @@ export * from './lib/config/x-framework-identity-sdk.config';
 export * from './lib/models/x-user.dto';
 export * from './lib/models/x-login.dto';
 export * from './lib/models/x-query.dto';
+export * from './lib/models/x-string.dto';
 export * from './lib/models/x-discovery.dto';
 export * from './lib/models/x-friendship.dto';
 export * from './lib/models/x-device-info.dto';

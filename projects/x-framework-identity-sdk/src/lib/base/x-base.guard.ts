@@ -103,7 +103,7 @@ export abstract class XBaseGuard
     });
 
     //
-    this.managerService.navigate([this.config.Pages.Login.route]);
+    this.managerService.navigateByPage(this.config.Pages.Login);
   }
   //#endregion
 }
