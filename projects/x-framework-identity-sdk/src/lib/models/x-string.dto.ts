@@ -4,7 +4,7 @@ import {
   isNullOrUndefined,
   isNullOrEmptyString,
 } from 'x-framework-core';
-import { XBaseNumberIDDto, XBaseRequestDto } from '../base/x-base.dto';
+import { XBaseNumberIDDto, XBaseRequestDto } from 'x-framework-core';
 
 export interface XStringDto extends XBaseNumberIDDto {
   language: XLocale | string;

@@ -4,7 +4,6 @@ import { XFrameworkServicesConfig } from 'x-framework-services';
 export type XSharedConfig = XFrameworkCoreConfig &
   XFrameworkServicesConfig & { [key: string]: any };
 
-// tslint:disable-next-line:no-empty-interface
 export interface XFrameworkIdentitySDKConfig extends XSharedConfig {
   //
   // Api Configuration ...

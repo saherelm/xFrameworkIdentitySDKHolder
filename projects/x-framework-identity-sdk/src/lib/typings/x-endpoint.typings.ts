@@ -2,7 +2,7 @@ export enum XEndPoint {
   Account,
 }
 
-export type XEndPoints = keyof typeof XEndPoint;
+export type XEndPoints = keyof typeof XEndPoint | string;
 
 /**
  * prepare all Route Params which used in Account Services Endpoints ...

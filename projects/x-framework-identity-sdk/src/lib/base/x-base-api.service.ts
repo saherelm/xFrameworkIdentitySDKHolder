@@ -11,6 +11,7 @@ import {
   throwException,
   isNullOrUndefined,
   isNullOrEmptyString,
+  toXString,
 } from 'x-framework-core';
 import { Inject } from '@angular/core';
 import {
@@ -26,6 +27,7 @@ import { getAuthorizationHeaderValue } from '../constants/x-header.enum';
 import { HttpHeaders, HttpClient, HttpParams } from '@angular/common/http';
 import { XLoginResponseDto, XTokenResponseDto } from '../models/x-login.dto';
 import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.config';
+import { XPageRequestDto } from '../models/x-page.dto';
 
 export abstract class XBaseApiService extends XLoggable {
   //
@@ -187,9 +189,8 @@ export abstract class XBaseApiService extends XLoggable {
     //
     // to determine the Accept header
     const httpHeaderAccepts: string[] = [XContentType.AppJson];
-    const httpHeaderAcceptSelected:
-      | string
-      | undefined = this.apiConfig.selectHeaderAccept(httpHeaderAccepts);
+    const httpHeaderAcceptSelected: string | undefined =
+      this.apiConfig.selectHeaderAccept(httpHeaderAccepts);
     if (httpHeaderAcceptSelected !== undefined) {
       headers = headers.set(XHeaders.Accept, httpHeaderAcceptSelected);
     }
@@ -207,9 +208,8 @@ export abstract class XBaseApiService extends XLoggable {
     //
     // to determine the Accept header
     const httpHeaderAccepts: string[] = [XContentType.AppOctetStream];
-    const httpHeaderAcceptSelected:
-      | string
-      | undefined = this.apiConfig.selectHeaderAccept(httpHeaderAccepts);
+    const httpHeaderAcceptSelected: string | undefined =
+      this.apiConfig.selectHeaderAccept(httpHeaderAccepts);
     if (httpHeaderAcceptSelected !== undefined) {
       headers = headers.set(XHeaders.Accept, httpHeaderAcceptSelected);
     }
@@ -250,9 +250,8 @@ export abstract class XBaseApiService extends XLoggable {
       consumes = [];
     }
     consumes = [...consumes, XContentType.AppJson];
-    const httpContentTypeSelected:
-      | string
-      | undefined = this.apiConfig.selectHeaderContentType(consumes);
+    const httpContentTypeSelected: string | undefined =
+      this.apiConfig.selectHeaderContentType(consumes);
     if (httpContentTypeSelected !== undefined) {
       headers = headers.set(XHeaders.ContentType, httpContentTypeSelected);
     }
@@ -268,65 +267,129 @@ export abstract class XBaseApiService extends XLoggable {
    */
   public generateXQueryHttpParams(query?: XQueryDto): HttpParams {
     //
-    let queryParameters = new HttpParams({
+    let result = new HttpParams({
       encoder: new XHttpUrlEncodingCodec(),
     });
 
     //
     if (query) {
       //
+      // Filter ...
       if (!isNullOrEmptyString(query.filter)) {
-        queryParameters = queryParameters.set(
-          XParam.Filter,
-          query.filter as string
-        );
+        result = result.set(XParam.Filter, query.filter as string);
       }
 
       //
+      // ContainsDetail ...
       if (!isNullOrUndefined(query.containsDetail)) {
-        queryParameters = queryParameters.set(
+        result = result.set(
           XParam.ContainsDetail,
-          query.containsDetail.toString()
+          toXString(query.containsDetail)
         );
       }
 
       //
+      // EnableTracking ...
       if (!isNullOrUndefined(query.enableTracking)) {
-        queryParameters = queryParameters.set(
+        result = result.set(
           XParam.EnableTracking,
-          query.enableTracking.toString()
+          toXString(query.enableTracking)
         );
       }
 
       //
+      // SortBy ...
       if (!isNullOrEmptyString(query.sortBy)) {
+        result = result.set(XParam.SortBy, toXString(query.sortBy));
+      }
+
+      //
+      // IsAscending ...
+      if (!isNullOrUndefined(query.isAscending)) {
+        result = result.set(XParam.IsAscending, toXString(query.isAscending));
+      }
+
+      //
+      // Page ...
+      if (!isNullOrUndefined(query.page)) {
+        result = result.set(XParam.Page, toXString(query.page));
+      }
+
+      //
+      // PageSize ...
+      if (!isNullOrUndefined(query.pageSize)) {
+        result = result.set(XParam.PageSize, toXString(query.pageSize));
+      }
+    }
+
+    //
+    return result;
+  }
+
+  /**
+   * generate proper http params based on RequestPage ...
+   *
+   * @param request the RequestPage Options ...
+   */
+  public generateXRequestPageHttpParams(request?: XPageRequestDto): HttpParams {
+    //
+    let queryParameters = new HttpParams({
+      encoder: new XHttpUrlEncodingCodec(),
+    });
+
+    //
+    if (request) {
+      //
+      // First ...
+      if (!isNullOrUndefined(request.first)) {
+        queryParameters = queryParameters.set(
+          XParam.First,
+          toXString(request.first)
+        );
+      }
+
+      //
+      // Last ...
+      if (!isNullOrUndefined(request.last)) {
+        queryParameters = queryParameters.set(
+          XParam.Last,
+          toXString(request.last)
+        );
+      }
+
+      //
+      // After ...
+      if (!isNullOrEmptyString(request.after)) {
+        queryParameters = queryParameters.set(
+          XParam.After,
+          toXString(request.after)
+        );
+      }
+
+      //
+      // Before ...
+      if (!isNullOrEmptyString(request.before)) {
+        queryParameters = queryParameters.set(
+          XParam.Before,
+          toXString(request.before)
+        );
+      }
+
+      //
+      // SortBy ...
+      if (!isNullOrEmptyString(request.sortBy)) {
         queryParameters = queryParameters.set(
           XParam.SortBy,
-          query.sortBy as string
+          toXString(request.sortBy)
         );
       }
 
       //
-      if (!isNullOrUndefined(query.isAscending)) {
+      // DescendingSort ...
+      if (!!request.descendingSort) {
         queryParameters = queryParameters.set(
-          XParam.IsAscending,
-          query.isAscending.toString()
-        );
-      }
-
-      //
-      if (!isNullOrUndefined(query.page)) {
-        queryParameters = queryParameters.set(
-          XParam.Page,
-          query.page.toString()
-        );
-      }
-
-      //
-      if (!isNullOrUndefined(query.pageSize)) {
-        queryParameters = queryParameters.set(
-          XParam.PageSize,
-          query.pageSize.toString()
+          XParam.DescendingSort,
+          toXString(request.descendingSort)
         );
       }
     }
@@ -339,11 +402,11 @@ export abstract class XBaseApiService extends XLoggable {
    * add specific language param to an existings params collection ...
    *
    * @param params the exists params ...
-   * @param languae the specific language value ...
+   * @param language the specific language value ...
    */
   public addLanguageQueryParam(
     params?: HttpParams,
-    languae?: XLocale | string
+    language?: XLocale | string
   ): HttpParams {
     //
     if (!params) {
@@ -354,12 +417,40 @@ export abstract class XBaseApiService extends XLoggable {
     }
 
     //
-    if (isNullOrEmptyString(languae)) {
+    if (isNullOrEmptyString(language)) {
       return params;
     }
 
     //
-    params = params.set(XParam.Language, languae);
+    params = params.set(XParam.Language, language);
+
+    //
+    return params;
+  }
+
+  /**
+   * attach containsDetail to Query String ...
+   *
+   * @param params exists param ..
+   * @param containsDetail the value ...
+   * @returns an instance of HttpParams ...
+   */
+  public addContainsDetailQueryParam(
+    params?: HttpParams,
+    containsDetail?: boolean
+  ): HttpParams {
+    //
+    if (!params) {
+      //
+      params = new HttpParams({
+        encoder: new XHttpUrlEncodingCodec(),
+      });
+    }
+
+    //
+    if (!!containsDetail) {
+      params = params.set(XParam.ContainsDetail, toXString(containsDetail));
+    }
 
     //
     return params;

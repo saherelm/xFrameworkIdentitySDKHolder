@@ -1,5 +1,5 @@
 import { XDeviceInfo } from './x-device-info.dto';
-import { XBaseRequestDto, XBaseResponseDto } from '../base/x-base.dto';
+import { XBaseRequestDto, XBaseResponseDto } from 'x-framework-core';
 
 export interface XActionRequestDto extends XBaseRequestDto {
   acceptTerms?: boolean;

@@ -1,4 +1,4 @@
-import { XBaseDto } from '../base/x-base.dto';
+import { XBaseDto } from 'x-framework-core';
 
 export enum XFriendshipState {
   None,

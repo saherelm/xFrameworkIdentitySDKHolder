@@ -8,8 +8,14 @@ export * from './lib/config/x-api-service.config';
 export * from './lib/config/x-framework-identity-sdk.config';
 
 //
+// Base ...
+export * from './lib/base/x-base.guard';
+export * from './lib/base/x-base-api.service';
+
+//
 // Models ...
 export * from './lib/models/x-user.dto';
+export * from './lib/models/x-page.dto';
 export * from './lib/models/x-login.dto';
 export * from './lib/models/x-query.dto';
 export * from './lib/models/x-string.dto';
@@ -64,6 +70,10 @@ export * from './lib/providers/x-url.encoder';
 // Tools ...
 export * from './lib/tools/x-role.tools';
 export * from './lib/tools/x-endpoint.tools';
+
+//
+// Helpers ...
+export * from './lib/helpers/x-account.helper';
 
 //
 // Token ...

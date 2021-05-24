@@ -2,7 +2,7 @@ import {
   XBaseRequestDto,
   XBaseResponseDto,
   XBaseNumberIDDto,
-} from '../base/x-base.dto';
+} from 'x-framework-core';
 import { isSameObject } from 'x-framework-core';
 import { XFriendshipInfoDto } from './x-friendship.dto';
 import { XAvailableRoles } from '../typings/x-role.typings';

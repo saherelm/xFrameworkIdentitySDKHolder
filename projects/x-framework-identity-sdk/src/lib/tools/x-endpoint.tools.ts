@@ -1,11 +1,10 @@
 import {
   values,
+  toArray,
   hasChild,
   XKeyValue,
   XOneOrManyType,
   isNullOrEmptyString,
-  toArray,
-  getVal,
 } from 'x-framework-core';
 import { XAccountEndPointParam } from '../typings/x-endpoint.typings';
 
