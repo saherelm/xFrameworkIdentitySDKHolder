@@ -54,7 +54,7 @@ export abstract class XAccountBaseService extends XBaseApiService {
     protected managerService: XManagerService
   ) {
     //
-    super('Account', httpClient, config, configuration);
+    super('Account', false, false, httpClient, config, configuration);
 
     //
     // handle initial state

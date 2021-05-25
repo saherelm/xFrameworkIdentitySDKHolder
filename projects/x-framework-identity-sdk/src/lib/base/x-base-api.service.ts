@@ -39,6 +39,8 @@ export abstract class XBaseApiService extends XLoggable {
 
   constructor(
     public readonly endPoint: XEndPoints,
+    public readonly applyApiIdentifier: boolean = false,
+    public readonly applyApiVersion: boolean = false,
     protected httpClient: HttpClient,
     @Inject(X_FRAMEWORK_IDENTITY_SDK_CONFIG)
     config: XFrameworkIdentitySDKConfig,
@@ -50,14 +52,31 @@ export abstract class XBaseApiService extends XLoggable {
     //
     if (apiConfig) {
       //
-      this.version = isNullOrEmptyString(apiConfig.apiVersion)
-        ? null
-        : apiConfig.apiVersion.replace('/', '');
+      this.version = '';
+      if (applyApiVersion) {
+        this.version = isNullOrEmptyString(apiConfig.apiVersion)
+          ? null
+          : apiConfig.apiVersion.replace('/', '');
+      }
 
       //
-      const bApiPath = apiConfig.baseApiPath || config.baseUrl;
+      let bApiPath = apiConfig.baseApiPath || config.baseUrl;
       if (isNullOrEmptyString(bApiPath)) {
         throwException(XExceptionIDs.InvalidConfiguration);
+      }
+
+      //
+      bApiPath = bApiPath.endsWith('/')
+        ? bApiPath.substring(0, bApiPath.length - 1)
+        : bApiPath;
+
+      //
+      // Check Api Identifier ...
+      if (applyApiIdentifier) {
+        const apiIdentifier = config.apiIdentifier || apiConfig.apiIdentifier;
+        if (!isNullOrEmptyString(apiIdentifier)) {
+          bApiPath = `${bApiPath}/${apiIdentifier}`;
+        }
       }
 
       //

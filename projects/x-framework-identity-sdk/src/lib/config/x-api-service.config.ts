@@ -12,6 +12,7 @@ export interface XApiConfigurationParameters {
   accessToken?: string | (() => string);
   baseApiPath?: string;
   apiVersion?: string;
+  apiIdentifier?: string;
   withCredentials?: boolean;
   poweredByValue?: string;
   revisionSecretKey?: string;
@@ -26,6 +27,7 @@ export class XApiConfiguration {
   accessToken?: string | (() => string);
   baseApiPath?: string;
   apiVersion?: string;
+  apiIdentifier?: string;
   withCredentials?: boolean;
   poweredByValue?: string;
   revisionSecretKey?: string;
@@ -39,6 +41,7 @@ export class XApiConfiguration {
     this.accessToken = configurationParameters.accessToken;
     this.baseApiPath = configurationParameters.baseApiPath;
     this.apiVersion = configurationParameters.apiVersion;
+    this.apiIdentifier = configurationParameters.apiIdentifier;
     this.withCredentials = configurationParameters.withCredentials;
     this.poweredByValue = configurationParameters.poweredByValue;
     this.revisionSecretKey = configurationParameters.revisionSecretKey;
