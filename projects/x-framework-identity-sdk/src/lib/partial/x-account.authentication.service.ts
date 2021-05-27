@@ -5,6 +5,7 @@ import {
   XExceptionIDs,
   throwException,
   isNullOrEmptyString,
+  toPromise,
 } from 'x-framework-core';
 import {
   XTokenResponseDto,
@@ -404,6 +405,33 @@ export abstract class XAccountAuthenticationService extends XAccountBaseService 
     if (!isLoggedIn) {
       throwException(XExceptionIDs.NotAllowed);
     }
+
+    //
+    // Instantiiate Headers from Default Headers ...
+    let headers = this.defaultHeaders;
+    headers = this.addAuthentication(headers);
+    headers = this.addAcceptJson(headers);
+    headers = this.addContentType(headers);
+
+    //
+    // Prepare Endpoint
+    const endPointPath = this.getActionRoute<
+      XAccountEndPoint,
+      XAccountEndPointParam
+    >(XAccountEndPoint.Logout);
+
+    //
+    // return result ...
+    try {
+      //
+      // Try Call Logout ...
+      await toPromise(
+        this.httpClient.post<void>(endPointPath, null, {
+          withCredentials: this.apiConfig.withCredentials,
+          headers,
+        })
+      );
+    } catch {}
 
     //
     const defUserId = await this.getDefaultUserIdentifier();

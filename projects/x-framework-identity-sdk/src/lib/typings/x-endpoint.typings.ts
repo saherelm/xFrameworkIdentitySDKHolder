@@ -54,6 +54,7 @@ export enum XAccountEndPoint {
   DiscoveryDocument = 'DiscoveryDocument',
   RequestScopeAccessToken = 'RequestScopeAccessToken',
   Login = 'Login',
+  Logout = 'Logout',
   Authenticate = 'Authenticate',
   RefreshTokens = 'RefreshTokens',
   Validate = 'Validate',
