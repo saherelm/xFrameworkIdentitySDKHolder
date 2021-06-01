@@ -6,9 +6,11 @@ import {
   XOneOrManyType,
   isNullOrEmptyString,
 } from 'x-framework-core';
-import { XAccountEndPointParam } from '../typings/x-endpoint.typings';
 
-export function isContainsParams(route: string) {
+export function isContainsParams<TParams>(
+  route: string,
+  params?: XOneOrManyType<XKeyValue<TParams, string>>
+) {
   //
   // Validate Args ...
   if (isNullOrEmptyString(route)) {
@@ -16,13 +18,14 @@ export function isContainsParams(route: string) {
   }
 
   //
-  const paramValues = values(XAccountEndPointParam) as Array<string>;
-  if (!hasChild(paramValues)) {
+  if (!hasChild(params)) {
     return false;
   }
 
   //
-  const result = paramValues.some((param) => route.includes(param));
+  const result = toArray(params).some((param) =>
+    route.includes(String(param.key))
+  );
   return result;
 }
 
@@ -34,8 +37,8 @@ export function setParams<TParams>(
   // Validate Args ...
   if (
     !hasChild(params) ||
-    !isContainsParams(route) ||
-    isNullOrEmptyString(route)
+    isNullOrEmptyString(route) ||
+    !isContainsParams(route, params)
   ) {
     return route;
   }

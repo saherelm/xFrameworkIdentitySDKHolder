@@ -537,7 +537,7 @@ export abstract class XBaseApiService extends XLoggable {
     }
 
     //
-    result = setParams(result, params);
+    result = setParams<TParams>(result, params);
     return result;
   }
   //#endregion

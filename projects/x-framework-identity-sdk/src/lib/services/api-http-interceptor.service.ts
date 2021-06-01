@@ -4,6 +4,7 @@ import {
   XBaseService,
   XExceptionIDs,
   getErrorException,
+  isNullOrUndefined,
 } from 'x-framework-core';
 import {
   HttpEvent,
@@ -27,7 +28,8 @@ import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.
 })
 export class ApiHttpInterceptorService
   extends XBaseService
-  implements HttpInterceptor {
+  implements HttpInterceptor
+{
   //
   private isRefreshing = false;
 
@@ -48,7 +50,7 @@ export class ApiHttpInterceptorService
     return this.handleInterceptRequest(req, next);
   }
 
-  handleInterceptRequest(
+  private handleInterceptRequest(
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
@@ -56,18 +58,18 @@ export class ApiHttpInterceptorService
     // Adding Identifier ...
     req = this.applyHeadersToRequest(req);
 
-    // //
-    // // Apply RefreshToken Handler ...
-    // const handledRefreshToken = !this.isRefreshing
-    //   ? this.applyRefreshTokenHandler(next.handle(req), req, next)
-    //   : next.handle(req);
-    const handledRefreshToken = next.handle(req);
+    //
+    // TODO: Check this ...
+    // Apply RefreshToken Handler ...
+    const handledRefreshToken = !this.isRefreshing
+      ? this.applyRefreshTokenHandler(next.handle(req), req, next)
+      : next.handle(req);
+    // const handledRefreshToken = next.handle(req);
 
     //
     // Apply Response Headers Handler ...
-    const handledResponseHeaders = this.applyResponseHandler(
-      handledRefreshToken
-    );
+    const handledResponseHeaders =
+      this.applyResponseHandler(handledRefreshToken);
 
     //
     // Apply Error Handler ...
@@ -87,7 +89,7 @@ export class ApiHttpInterceptorService
 
   //
   //#region Actions / Handlers ...
-  applyHeadersToRequest(request: HttpRequest<any>): HttpRequest<any> {
+  private applyHeadersToRequest(request: HttpRequest<any>): HttpRequest<any> {
     return request.clone({
       setHeaders: {
         XRegisteredTo: `${this.config.poweredValue}`,
@@ -95,7 +97,7 @@ export class ApiHttpInterceptorService
     });
   }
 
-  applyFinally(
+  private applyFinally(
     current: Observable<HttpEvent<any>>
   ): Observable<HttpEvent<any>> {
     //
@@ -109,7 +111,7 @@ export class ApiHttpInterceptorService
     );
   }
 
-  applyRefreshTokenHandler(
+  private applyRefreshTokenHandler(
     current: Observable<HttpEvent<any>>,
     req: HttpRequest<any>,
     next: HttpHandler
@@ -141,7 +143,7 @@ export class ApiHttpInterceptorService
     );
   }
 
-  applyResponseHandler(
+  private applyResponseHandler(
     current: Observable<HttpEvent<any>>
   ): Observable<HttpEvent<any>> {
     //
@@ -153,14 +155,16 @@ export class ApiHttpInterceptorService
     );
   }
 
-  applyErrorHandler(
+  private applyErrorHandler(
     current: Observable<HttpEvent<any>>
   ): Observable<HttpEvent<any>> {
     return current.pipe(
       catchError((error: HttpErrorResponse) => {
         //
         this.managerService.loading = false;
-        const mException = getErrorException(error.error);
+        const mException = getErrorException(
+          !isNullOrUndefined(error.error) ? error.error : error
+        );
 
         //
         this.managerService.error = mException;
@@ -174,7 +178,7 @@ export class ApiHttpInterceptorService
     );
   }
 
-  handleRefreshToken(
+  private handleRefreshToken(
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
@@ -232,7 +236,7 @@ export class ApiHttpInterceptorService
     }
   }
 
-  async handleResponseHeaders(event: HttpEvent<any>): Promise<void> {
+  private async handleResponseHeaders(event: HttpEvent<any>): Promise<void> {
     //
     if (event.type === HttpEventType.Response) {
       //
