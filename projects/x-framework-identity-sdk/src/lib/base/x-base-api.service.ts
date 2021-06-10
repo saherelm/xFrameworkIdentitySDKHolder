@@ -1,9 +1,10 @@
 import {
   XParam,
   XLocale,
-  XHeaders,
+  XHeader,
   hasChild,
   XLoggable,
+  toXString,
   XKeyValue,
   XContentType,
   XExceptionIDs,
@@ -11,15 +12,15 @@ import {
   throwException,
   isNullOrUndefined,
   isNullOrEmptyString,
-  toXString,
 } from 'x-framework-core';
-import { Inject } from '@angular/core';
 import {
   X_API_CONFIG,
   X_FRAMEWORK_IDENTITY_SDK_CONFIG,
 } from '../tokens/x-injectable-tokens';
+import { Inject } from '@angular/core';
 import { XQueryDto } from '../models/x-query.dto';
 import { setParams } from '../tools/x-endpoint.tools';
+import { XPageRequestDto } from '../models/x-page.dto';
 import { XEndPoints } from '../typings/x-endpoint.typings';
 import { XHttpUrlEncodingCodec } from '../providers/x-url.encoder';
 import { XApiConfiguration } from '../config/x-api-service.config';
@@ -27,7 +28,6 @@ import { getAuthorizationHeaderValue } from '../constants/x-header.enum';
 import { HttpHeaders, HttpClient, HttpParams } from '@angular/common/http';
 import { XLoginResponseDto, XTokenResponseDto } from '../models/x-login.dto';
 import { XFrameworkIdentitySDKConfig } from '../config/x-framework-identity-sdk.config';
-import { XPageRequestDto } from '../models/x-page.dto';
 
 export abstract class XBaseApiService extends XLoggable {
   //
@@ -104,7 +104,7 @@ export abstract class XBaseApiService extends XLoggable {
     //
     // Setting XPowered in Default Headers ...
     this.defaultHeaders = this.defaultHeaders.set(
-      XHeaders.XPoweredBy,
+      XHeader.XPoweredBy,
       apiConfig.poweredByValue
     );
   }
@@ -147,7 +147,7 @@ export abstract class XBaseApiService extends XLoggable {
       // Handle Authentication (access_token) required
       if (this.apiConfig.apiKeys.Authorization) {
         headers = headers.set(
-          XHeaders.Authorization,
+          XHeader.Authorization,
           this.apiConfig.apiKeys.Authorization
         );
       }
@@ -160,7 +160,7 @@ export abstract class XBaseApiService extends XLoggable {
       // Access Token ...
       if (!isNullOrEmptyString(tokens.accessToken)) {
         headers = headers.set(
-          XHeaders.Authorization,
+          XHeader.Authorization,
           getAuthorizationHeaderValue(tokens.accessToken)
         );
       }
@@ -168,13 +168,13 @@ export abstract class XBaseApiService extends XLoggable {
       //
       // Refresh Token ...
       if (!isNullOrEmptyString(tokens.refreshToken)) {
-        headers = headers.set(XHeaders.RefreshToken, tokens.refreshToken);
+        headers = headers.set(XHeader.RefreshToken, tokens.refreshToken);
       }
 
       //
       // Expired At ...
       if (!isNullOrUndefined(tokens.expiresAt)) {
-        headers = headers.set(XHeaders.ExpiresAt, tokens.expiresAt.toString());
+        headers = headers.set(XHeader.ExpiresAt, tokens.expiresAt.toString());
       }
     }
 
@@ -191,7 +191,7 @@ export abstract class XBaseApiService extends XLoggable {
    */
   public addCustomHeader(
     headers: HttpHeaders,
-    key: XParam | XHeaders | string,
+    key: XParam | XHeader | string,
     value: any
   ): HttpHeaders {
     //
@@ -211,7 +211,7 @@ export abstract class XBaseApiService extends XLoggable {
     const httpHeaderAcceptSelected: string | undefined =
       this.apiConfig.selectHeaderAccept(httpHeaderAccepts);
     if (httpHeaderAcceptSelected !== undefined) {
-      headers = headers.set(XHeaders.Accept, httpHeaderAcceptSelected);
+      headers = headers.set(XHeader.Accept, httpHeaderAcceptSelected);
     }
 
     //
@@ -230,7 +230,7 @@ export abstract class XBaseApiService extends XLoggable {
     const httpHeaderAcceptSelected: string | undefined =
       this.apiConfig.selectHeaderAccept(httpHeaderAccepts);
     if (httpHeaderAcceptSelected !== undefined) {
-      headers = headers.set(XHeaders.Accept, httpHeaderAcceptSelected);
+      headers = headers.set(XHeader.Accept, httpHeaderAcceptSelected);
     }
 
     //
@@ -272,11 +272,43 @@ export abstract class XBaseApiService extends XLoggable {
     const httpContentTypeSelected: string | undefined =
       this.apiConfig.selectHeaderContentType(consumes);
     if (httpContentTypeSelected !== undefined) {
-      headers = headers.set(XHeaders.ContentType, httpContentTypeSelected);
+      headers = headers.set(XHeader.ContentType, httpContentTypeSelected);
     }
 
     //
     return headers;
+  }
+
+  /**
+   * add custom Param ...
+   *
+   * @param params exists HttpParams instance
+   * @param item a KeyValue Pair ...
+   * @returns HttpParams ...
+   */
+  public addCustomParam(
+    params?: HttpParams,
+    item?: XKeyValue<XParam | XHeader | string, any>
+  ): HttpParams {
+    //
+    if (!params) {
+      params = new HttpParams({
+        encoder: new XHttpUrlEncodingCodec(),
+      });
+    }
+
+    //
+    if (
+      item &&
+      !isNullOrUndefined(item) &&
+      !isNullOrUndefined(item.key) &&
+      !isNullOrUndefined(item.value)
+    ) {
+      params = params.set(item.key, toXString(item.value));
+    }
+
+    //
+    return params;
   }
 
   /**

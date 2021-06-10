@@ -1,5 +1,5 @@
 import {
-  XHeaders,
+  XHeader,
   toObservable,
   XBaseService,
   XExceptionIDs,
@@ -244,10 +244,10 @@ export class ApiHttpInterceptorService
 
       //
       const isContainsNewAuthentication =
-        headers.has(XHeaders.Authorization) &&
-        headers.has(XHeaders.RefreshToken) &&
-        headers.has(XHeaders.ExpiresAt) &&
-        headers.has(XHeaders.RevisionChecksum);
+        headers.has(XHeader.Authorization) &&
+        headers.has(XHeader.RefreshToken) &&
+        headers.has(XHeader.ExpiresAt) &&
+        headers.has(XHeader.RevisionChecksum);
 
       //
       if (isContainsNewAuthentication) {
@@ -256,11 +256,11 @@ export class ApiHttpInterceptorService
 
         //
         const accessToken = headers
-          .get(XHeaders.Authorization)
-          .replace(XHeaders.AuthorizationPrefix, '');
-        const refreshToken = headers.get(XHeaders.RefreshToken);
-        const expiresAt = +headers.get(XHeaders.ExpiresAt);
-        const revisionChecksum = headers.get(XHeaders.RevisionChecksum);
+          .get(XHeader.Authorization)
+          .replace(XHeader.AuthorizationPrefix, '');
+        const refreshToken = headers.get(XHeader.RefreshToken);
+        const expiresAt = +headers.get(XHeader.ExpiresAt);
+        const revisionChecksum = headers.get(XHeader.RevisionChecksum);
 
         //
         const profile = oldTokens.profile;

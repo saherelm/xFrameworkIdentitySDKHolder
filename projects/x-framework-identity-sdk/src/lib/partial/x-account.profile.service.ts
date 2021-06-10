@@ -10,7 +10,7 @@ import {
   XAccountEndPoint,
   XAccountEndPointParam,
 } from '../typings/x-endpoint.typings';
-import { XHeaders, XValidators } from 'x-framework-core';
+import { XHeader, XValidators } from 'x-framework-core';
 import { HttpResponse, HttpEvent } from '@angular/common/http';
 import { XQueryDto, XQueryResultDto } from '../models/x-query.dto';
 import { XAccountAuthenticationService } from './x-account.authentication.service';
@@ -309,16 +309,13 @@ export abstract class XAccountProfileService extends XAccountAuthenticationServi
 
     //
     // Prepare Result ...
-    return this.httpClient.get<XQueryResultDto<XavatarDto>>(
-      endPointPath,
-      {
-        params: queryParameters,
-        withCredentials: this.apiConfig.withCredentials,
-        headers,
-        observe,
-        reportProgress,
-      }
-    );
+    return this.httpClient.get<XQueryResultDto<XavatarDto>>(endPointPath, {
+      params: queryParameters,
+      withCredentials: this.apiConfig.withCredentials,
+      headers,
+      observe,
+      reportProgress,
+    });
   }
   //#endregion
 
@@ -488,7 +485,7 @@ export abstract class XAccountProfileService extends XAccountAuthenticationServi
 
     //
     const formData: FormData = new FormData();
-    formData.append(XHeaders.File, body, body.name);
+    formData.append(XHeader.File, body, body.name);
 
     //
     // Instantiiate Headers from Default Headers ...
@@ -549,7 +546,7 @@ export abstract class XAccountProfileService extends XAccountAuthenticationServi
     //
     const formData: FormData = new FormData();
     body.forEach((f) => {
-      formData.append(XHeaders.Files, f, f.name);
+      formData.append(XHeader.Files, f, f.name);
     });
 
     //

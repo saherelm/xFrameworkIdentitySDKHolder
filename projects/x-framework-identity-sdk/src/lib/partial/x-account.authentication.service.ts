@@ -1,11 +1,11 @@
 import {
-  XHeaders,
+  XHeader,
   fromJson,
+  toPromise,
   XValidators,
   XExceptionIDs,
   throwException,
   isNullOrEmptyString,
-  toPromise,
 } from 'x-framework-core';
 import {
   XTokenResponseDto,
@@ -105,7 +105,7 @@ export abstract class XAccountAuthenticationService extends XAccountBaseService 
     // Instantiiate Headers from Default Headers ...
     let headers = this.defaultHeaders;
     headers = this.addAcceptJson(headers);
-    headers = this.addCustomHeader(headers, XHeaders.Scope, scope);
+    headers = this.addCustomHeader(headers, XHeader.Scope, scope);
 
     //
     // Prepare Endpoint

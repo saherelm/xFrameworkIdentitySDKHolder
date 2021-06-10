@@ -9,7 +9,7 @@ import {
   XAccountEndPointParam,
 } from '../typings/x-endpoint.typings';
 import { HttpEvent, HttpResponse } from '@angular/common/http';
-import { XCountryCode, XHeaders, XValidators } from 'x-framework-core';
+import { XCountryCode, XHeader, XValidators } from 'x-framework-core';
 import { XAccountFriendshipService } from './x-account.friendship.service';
 
 export abstract class XAccountRegistrationService extends XAccountFriendshipService {
@@ -915,8 +915,8 @@ export abstract class XAccountRegistrationService extends XAccountFriendshipServ
 
     //
     const formData: FormData = new FormData();
-    formData.append(XHeaders.File, body, body.name);
-    formData.append(XHeaders.ActionToken, actionToken);
+    formData.append(XHeader.File, body, body.name);
+    formData.append(XHeader.ActionToken, actionToken);
 
     //
     // Instantiiate Headers from Default Headers ...
